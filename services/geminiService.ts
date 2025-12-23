@@ -1,9 +1,11 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export async function extractAppointmentFromText(text: string) {
+  // Inicializamos dentro da função para garantir que a chave da API esteja disponível 
+  // no contexto de execução do navegador.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Extraia informações de agendamento de salão deste texto de WhatsApp: "${text}". 
