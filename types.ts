@@ -27,4 +27,10 @@ export interface IncomingMessage {
   detectedBooking?: any;
 }
 
-export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection';
+export interface SalonConfig {
+  name: string;
+  niche: string;
+  setupComplete: boolean;
+}
+
+export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection' | 'onboarding';
