@@ -118,7 +118,7 @@ app.post("/webhook", async (req, res) => {
 });
 
 // Configuração de Porta e Host para Produção (Render)
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0"; // Essencial para deploy em cloud
 
 app.listen(PORT, HOST, () => {
