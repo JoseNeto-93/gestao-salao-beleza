@@ -1,16 +1,24 @@
-
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import bodyParser from "body-parser";
-import { analyzeMessage } from "./gemini.js";
-import { supabase } from "./supabase.js";
-
-dotenv.config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+require("dotenv").config();
+const { analyzeMessage } = require("./gemini");
+const { supabase } = require("./supabase");
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+
+// 🔹 Segurança e middlewares
+app.use(helmet());
+app.use(cors({ origin: process.env.FRONTEND_URL || "*" })); // restringir para seu frontend
+app.use(express.json());
+
+// 🔹 Porta dinâmica
+const PORT = process.env.PORT || 3000;
+
+// 🔹 Rota raiz (teste)
+app.get("/", (req, res) => {
+  res.send("Backend BellaFlow rodando 🚀");
+});
 
 // 🔎 STATUS (Monitoramento pelo Frontend)
 app.get("/status", (req, res) => {
@@ -33,8 +41,10 @@ app.get("/webhook", (req, res) => {
   if (mode === "subscribe" && token === process.env.META_VERIFY_TOKEN) {
     console.log("✅ Webhook BellaFlow validado com sucesso!");
     return res.status(200).send(challenge);
+  } else {
+    console.warn(`⚠️ Tentativa de validação webhook falhou. Mode: ${mode}, Token: ${token}`);
+    return res.sendStatus(403);
   }
-  return res.sendStatus(403);
 });
 
 /**
@@ -51,14 +61,14 @@ app.post("/webhook", async (req, res) => {
     // Ignorar se não houver mensagem de texto
     if (!message || !message.text) return res.sendStatus(200);
 
-    const phoneNumberId = value.metadata.phone_number_id; // Identificador único do salão
-    const from = message.from; // Número da cliente
+    const phoneNumberId = value.metadata.phone_number_id;
+    const from = message.from;
     const text = message.text.body;
 
     console.log(`📩 [Salão: ${phoneNumberId}] Mensagem de ${from}: ${text}`);
 
-    // 1. Localizar Salão
-    let { data: salon, error: salonError } = await supabase
+    // 1️⃣ Localizar Salão ou criar
+    let { data: salon } = await supabase
       .from("salons")
       .select("*")
       .eq("phone_number_id", phoneNumberId)
@@ -67,19 +77,22 @@ app.post("/webhook", async (req, res) => {
     if (!salon) {
       const { data: newSalon, error: createError } = await supabase
         .from("salons")
-        .insert({
+        .upsert({
           phone_number_id: phoneNumberId,
           name: `Salão BellaFlow (${phoneNumberId.slice(-4)})`,
           is_active: true
         })
         .select()
         .single();
-      
-      if (createError) throw createError;
+
+      if (createError) {
+        console.error("❌ Erro criando salão:", createError.message);
+        throw createError;
+      }
       salon = newSalon;
     }
 
-    // 2. Salvar mensagem
+    // 2️⃣ Salvar mensagem
     const { data: msgRow, error: msgError } = await supabase
       .from("messages")
       .insert({
@@ -93,7 +106,7 @@ app.post("/webhook", async (req, res) => {
 
     if (msgError) throw msgError;
 
-    // 3. IA: Analisar agendamento
+    // 3️⃣ IA: Analisar agendamento
     const suggestion = await analyzeMessage(text);
 
     if (suggestion) {
@@ -107,24 +120,18 @@ app.post("/webhook", async (req, res) => {
         price: suggestion.estimatedPrice,
         status: "pending"
       });
-      console.log(`✨ Sugestão gerada para o salão ${salon.id}`);
+      console.log(`✨ Sugestão gerada: ${suggestion.service} para ${suggestion.clientName} em ${suggestion.date} ${suggestion.time}`);
     }
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Erro Webhook Cloud:", err.message);
-    res.sendStatus(500);
+    console.error("❌ Erro Webhook Cloud:", err);
+    res.status(500).json({ error: "Erro interno no servidor" });
   }
 });
 
-// Configuração de Porta e Host para Produção (Render)
-const PORT = process.env.PORT || 3000;
-const HOST = "0.0.0.0"; // Essencial para deploy em cloud
-
-app.listen(PORT, HOST, () => {
-  console.log(`\n================================================`);
-  console.log(`🚀 BellaFlow Backend Production Ready`);
-  console.log(`📡 Host: ${HOST} | Porta: ${PORT}`);
-  console.log(`✅ Webhook: /webhook`);
-  console.log(`================================================\n`);
+// 🔹 Listen com host correto
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
+
