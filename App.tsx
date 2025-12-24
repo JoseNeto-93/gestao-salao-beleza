@@ -24,7 +24,8 @@ import {
   Code2,
   Sparkles,
   ArrowRight,
-  Loader2
+  Loader2,
+  Info
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Appointment, Service, View, IncomingMessage, SalonConfig } from './types';
@@ -96,6 +97,7 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   
   const [incomingMessages, setIncomingMessages] = useState<IncomingMessage[]>([]);
   const [notifications, setNotifications] = useState<IncomingMessage[]>([]);
@@ -113,7 +115,7 @@ export default function App() {
         const dailyNotif: IncomingMessage = {
           id: 'daily-report-' + Date.now(),
           sender: 'Bella IA',
-          text: `Olá ${salon.name}! O dia começou. Acompanhe seu faturamento em tempo real aqui: https://gestao-salao-beleza.vercel.app/`,
+          text: `Olá ${salon.name}! O dia começou. Acompanhe seu faturamento em tempo real aqui.`,
           timestamp: new Date().toLocaleTimeString(),
           processed: true
         };
@@ -121,13 +123,13 @@ export default function App() {
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [salon.setupComplete]);
+  }, [salon.setupComplete, salon.name]);
 
   // Fluxo de Simulação de Dados Reais
   useEffect(() => {
     if (isConnected && isSyncing) {
       const interval = setInterval(async () => {
-        if (Math.random() > 0.75) { // Aumentada a frequência para demonstração
+        if (Math.random() > 0.70) {
           const mockClients = ['Mariana Oliveira', 'Juliana Lins', 'Fernanda Santos', 'Carla Mendes', 'Roberta Silva', 'Camila Rocha', 'Bia Nunes'];
           const mockTexts = [
             "Oi, queria marcar um corte pra sábado às 10h",
@@ -155,7 +157,7 @@ export default function App() {
             }
           } catch (e) { console.error("Erro IA:", e); }
         }
-      }, 8000);
+      }, 7000);
       return () => clearInterval(interval);
     }
   }, [isConnected, isSyncing]);
@@ -200,20 +202,32 @@ export default function App() {
 
   const generateQRCode = () => {
     setIsGeneratingQR(true);
-    // Simula tempo de geração do QR Code real
+    setQrCodeData(null);
     setTimeout(() => {
-      setQrCodeData("https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=BELLAFLOW-SESSION-" + Date.now());
+      setQrCodeData("https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=BELLAFLOW-SESSION-" + Date.now());
       setIsGeneratingQR(false);
-    }, 1500);
+    }, 1200);
   };
 
   const simulateScan = () => {
-    if (!qrCodeData) return;
-    setIsSyncing(true);
+    if (!qrCodeData || isAuthenticating) return;
+    setIsAuthenticating(true);
+    // Simula o processo de "Handshake" do WhatsApp
     setTimeout(() => {
       setIsConnected(true);
+      setIsSyncing(true);
       setQrCodeData(null);
-    }, 2000);
+      setIsAuthenticating(false);
+      setActiveView('dashboard');
+      // Notificação de sucesso
+      setNotifications(prev => [{
+        id: 'conn-success',
+        sender: 'Sistema',
+        text: 'Dispositivo vinculado com sucesso! Bella IA começou o monitoramento.',
+        timestamp: new Date().toLocaleTimeString(),
+        processed: true
+      }, ...prev]);
+    }, 3000);
   };
 
   const handleProcessMessage = async () => {
@@ -291,8 +305,8 @@ export default function App() {
       <div className="fixed top-6 right-6 z-[100] space-y-4 pointer-events-none">
         {notifications.map(notif => (
           <div key={notif.id} className="pointer-events-auto glass-card border-white shadow-2xl rounded-[2.5rem] p-7 w-96 flex items-center space-x-5 animate-in slide-in-from-right-10 duration-500">
-            <div className={`w-14 h-14 ${notif.id.toString().startsWith('daily') ? 'bg-slate-900' : 'bg-rose-500'} rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg`}>
-              {notif.id.toString().startsWith('daily') ? <Bell className="w-7 h-7" /> : <Zap className="w-7 h-7 animate-pulse" />}
+            <div className={`w-14 h-14 ${notif.id.toString().startsWith('daily') || notif.id === 'conn-success' ? 'bg-slate-900' : 'bg-rose-500'} rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg`}>
+              {notif.id.toString().startsWith('daily') ? <Bell className="w-7 h-7" /> : notif.id === 'conn-success' ? <CheckCircle2 className="w-7 h-7 text-emerald-400" /> : <Zap className="w-7 h-7 animate-pulse" />}
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-[11px] font-black text-rose-600 uppercase tracking-widest mb-1">{notif.sender}</p>
@@ -359,8 +373,8 @@ export default function App() {
           <h2 className="text-3xl font-display font-bold text-slate-900 tracking-tight capitalize">{activeView === 'dashboard' ? 'Início' : activeView}</h2>
           
           <div className="flex items-center space-x-8">
-            <button onClick={() => setSalon({...salon, setupComplete: false, name: ''})} className="p-2 text-slate-400 hover:text-rose-500 transition-colors" title="Reiniciar Setup">
-              <Settings className="w-5 h-5" />
+            <button onClick={() => { localStorage.removeItem('bella_salon_config'); window.location.reload(); }} className="p-2 text-slate-400 hover:text-rose-500 transition-colors" title="Reiniciar Sistema">
+              <RefreshCw className="w-5 h-5" />
             </button>
             <div className="flex items-center space-x-4 bg-white/40 p-2 pr-6 rounded-full border border-white/50">
                <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-lg">
@@ -380,9 +394,9 @@ export default function App() {
                   <p className="text-slate-800 font-medium mt-2 text-lg">Métricas geradas a partir das conversas do WhatsApp.</p>
                 </div>
                 {!isConnected && (
-                   <div className="bg-rose-500 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 font-bold text-sm shadow-xl shadow-rose-500/30 animate-pulse cursor-pointer" onClick={() => setActiveView('connection')}>
+                   <div className="bg-rose-500 text-white px-8 py-4 rounded-2xl flex items-center space-x-3 font-bold text-sm shadow-xl shadow-rose-500/30 animate-pulse cursor-pointer hover:scale-105 transition-all" onClick={() => setActiveView('connection')}>
                       <Zap className="w-5 h-5" />
-                      <span>Conectar WhatsApp para Ativar Painel</span>
+                      <span>Conectar WhatsApp para Ativar</span>
                    </div>
                 )}
               </div>
@@ -391,36 +405,36 @@ export default function App() {
                 <MetricCard title="Faturamento Hoje" value={`R$ ${totalRevenue.toLocaleString()}`} trend="+0%" icon={<DollarSign className="w-7 h-7" />} />
                 <MetricCard title="Agendados" value={appointments.length.toString()} trend="+0%" icon={<Calendar className="w-7 h-7" />} />
                 <MetricCard title="Mensagens IA" value={incomingMessages.length.toString()} trend="+0%" icon={<MessageCircle className="w-7 h-7" />} />
-                <MetricCard title="Conversão" value={appointments.length > 0 ? "91%" : "0%"} trend="+0%" icon={<TrendingUp className="w-7 h-7" />} />
+                <MetricCard title="Conversão" value={appointments.length > 0 ? "94%" : "0%"} trend="+0%" icon={<TrendingUp className="w-7 h-7" />} />
               </div>
 
               {appointments.length === 0 ? (
                 <div className="glass-card p-32 rounded-[4rem] text-center space-y-8 luxury-shadow border-white/40 relative overflow-hidden group">
                    <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/5 to-transparent"></div>
-                   <div className="w-24 h-24 bg-white/80 rounded-[2.5rem] flex items-center justify-center text-rose-300 mx-auto shadow-xl group-hover:scale-110 transition-transform">
+                   <div className="w-24 h-24 bg-white/80 rounded-[2.5rem] flex items-center justify-center text-rose-300 mx-auto shadow-xl group-hover:scale-110 transition-transform duration-500">
                       <BarChart3 className="w-14 h-14" />
                    </div>
                    <div className="relative z-10">
                       <h4 className="text-4xl font-display font-bold text-slate-900">Seu Dashboard está Vazio</h4>
                       <p className="text-slate-700 mt-4 max-w-md mx-auto text-lg font-medium leading-relaxed">
-                        Para ver o faturamento e agendamentos, você precisa conectar o seu WhatsApp e ativar a monitoria da Bella IA.
+                        Como este é um ambiente de demonstração, você precisa <b>simular a conexão</b> do WhatsApp para começar a receber agendamentos automáticos.
                       </p>
                    </div>
                    <button 
                     onClick={() => setActiveView('connection')} 
                     className="relative z-10 bg-slate-900 hover:bg-black text-white px-16 py-6 rounded-[2.5rem] font-black uppercase tracking-widest shadow-2xl transition-all active:scale-95"
                    >
-                      Vincular Agora
+                      Ir para Conexão
                    </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in duration-1000">
                    <div className="lg:col-span-2 glass-card p-12 rounded-[4rem] luxury-shadow">
                       <div className="flex items-center justify-between mb-12">
-                        <h3 className="text-2xl font-display font-bold text-slate-900">Evolução do Faturamento (Hoje)</h3>
+                        <h3 className="text-2xl font-display font-bold text-slate-900">Fluxo de Faturamento</h3>
                         <div className="flex items-center space-x-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest">
                            <TrendingUp className="w-4 h-4" />
-                           <span>Performance Alta</span>
+                           <span>Performance Real</span>
                         </div>
                       </div>
                       <div className="h-[400px]">
@@ -445,7 +459,7 @@ export default function App() {
                       </div>
                    </div>
                    <div className="glass-dark p-12 rounded-[4rem] text-white shadow-2xl flex flex-col">
-                      <h3 className="text-2xl font-display font-bold mb-12">Preferência do Público</h3>
+                      <h3 className="text-2xl font-display font-bold mb-12">Principais Serviços</h3>
                       <div className="flex-1 space-y-6">
                          {topServices.map((s, i) => (
                            <div key={i} className="group p-5 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all cursor-default">
@@ -463,7 +477,7 @@ export default function App() {
                          ))}
                       </div>
                       <div className="mt-12 p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-3xl">
-                         <p className="text-xs text-emerald-400 font-medium leading-relaxed italic">"Bella observou: O serviço '{topServices[0]?.name}' é o seu carro-chefe hoje. Considere criar uma promoção para horários vagos."</p>
+                         <p className="text-xs text-emerald-400 font-medium leading-relaxed italic">"Dica da Bella: '{topServices[0]?.name}' está em alta. Que tal um combo para fidelizar?"</p>
                       </div>
                    </div>
                 </div>
@@ -475,12 +489,12 @@ export default function App() {
              <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8">
                 <div className="glass-card p-12 rounded-[3.5rem] border-white/60 flex justify-between items-center shadow-xl">
                    <div>
-                      <h3 className="text-4xl font-display font-bold text-slate-900">Conversas Monitoradas</h3>
-                      <p className="text-slate-700 mt-2 text-lg">Bella está analisando intenções de agendamento em tempo real.</p>
+                      <h3 className="text-4xl font-display font-bold text-slate-900">Mensagens Monitoradas</h3>
+                      <p className="text-slate-700 mt-2 text-lg">Bella analisa as intenções de agendamento que chegam pelo seu WhatsApp.</p>
                    </div>
                    {!isConnected && (
                      <button onClick={() => setActiveView('connection')} className="bg-rose-500 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest shadow-xl shadow-rose-500/20">
-                       Vincular WhatsApp
+                       Ativar WhatsApp
                      </button>
                    )}
                 </div>
@@ -489,7 +503,7 @@ export default function App() {
                    <div className="lg:col-span-2 glass-card p-10 rounded-[3.5rem] luxury-shadow max-h-[700px] overflow-y-auto custom-scrollbar">
                       <h4 className="text-xl font-bold mb-8 text-slate-800 flex items-center">
                         <MessageCircle className="w-6 h-6 mr-3 text-rose-500" />
-                        Histórico de Chats
+                        Chats em Tempo Real
                       </h4>
                       <div className="space-y-5">
                          {incomingMessages.map(msg => (
@@ -504,7 +518,7 @@ export default function App() {
                          {incomingMessages.length === 0 && (
                            <div className="py-32 text-center opacity-40">
                               <MessageCircle className="w-16 h-16 mx-auto mb-6 text-slate-300" />
-                              <p className="font-bold uppercase tracking-widest text-sm">Aguardando Mensagens...</p>
+                              <p className="font-bold uppercase tracking-widest text-sm">Nenhuma mensagem ainda...</p>
                            </div>
                          )}
                       </div>
@@ -516,13 +530,13 @@ export default function App() {
                          <div className="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/30">
                            <Zap className="text-white w-6 h-6" />
                          </div>
-                         <span>Analisador de Intenções</span>
+                         <span>Analisador Bella IA</span>
                       </h4>
                       <div className="flex-1 relative z-10">
                         <textarea 
                           value={waMessage}
                           onChange={(e) => setWaMessage(e.target.value)}
-                          placeholder="Clique em uma mensagem recebida para processar o agendamento ou digite aqui..."
+                          placeholder="Selecione um chat ou escreva aqui para testar a extração da IA..."
                           className="w-full h-full bg-transparent border-none text-rose-50 text-3xl font-display outline-none resize-none placeholder:text-white/10 leading-relaxed"
                         />
                       </div>
@@ -531,7 +545,7 @@ export default function App() {
                         disabled={!waMessage.trim() || isProcessingMsg}
                         className="mt-10 w-full bg-rose-500 py-8 rounded-[2.5rem] font-black uppercase tracking-widest text-lg shadow-2xl shadow-rose-500/20 hover:bg-rose-600 transition-all disabled:opacity-20 flex items-center justify-center space-x-3 active:scale-95"
                       >
-                        {isProcessingMsg ? <Loader2 className="w-8 h-8 animate-spin" /> : <span>Confirmar Agendamento</span>}
+                        {isProcessingMsg ? <Loader2 className="w-8 h-8 animate-spin" /> : <span>Confirmar Dados</span>}
                       </button>
                    </div>
                 </div>
@@ -541,8 +555,8 @@ export default function App() {
                      <div className="bg-white rounded-[4rem] p-16 max-w-2xl w-full shadow-2xl animate-in zoom-in-95 border border-white">
                         <div className="flex justify-between items-start mb-12">
                            <div>
-                              <h4 className="text-4xl font-display font-bold text-slate-900 tracking-tight">Validar Detalhes</h4>
-                              <p className="text-slate-500 text-sm mt-2 uppercase font-black tracking-widest">Bella IA extraiu estas informações:</p>
+                              <h4 className="text-4xl font-display font-bold text-slate-900 tracking-tight">Validar Extração</h4>
+                              <p className="text-slate-500 text-sm mt-2 uppercase font-black tracking-widest">Informações identificadas pela IA:</p>
                            </div>
                            <button onClick={() => setShowBookingConfirm(null)} className="p-2 text-slate-300 hover:text-rose-500 transition-colors">
                               <X className="w-10 h-10" />
@@ -553,7 +567,7 @@ export default function App() {
                              { l: 'Cliente', v: showBookingConfirm.clientName },
                              { l: 'Serviço', v: showBookingConfirm.serviceName },
                              { l: 'Data', v: showBookingConfirm.date },
-                             { l: 'Horário sugerido', v: showBookingConfirm.time }
+                             { l: 'Horário', v: showBookingConfirm.time }
                            ].map((it, idx) => (
                              <div key={idx} className="bg-slate-50/80 p-7 rounded-[2.5rem] border border-slate-100">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{it.l}</p>
@@ -562,8 +576,8 @@ export default function App() {
                            ))}
                         </div>
                         <div className="flex space-x-4">
-                           <button onClick={() => setShowBookingConfirm(null)} className="flex-1 py-7 rounded-[2rem] font-black uppercase tracking-widest text-xs text-slate-400 hover:text-slate-600 transition-colors">Cancelar</button>
-                           <button onClick={() => confirmBooking(showBookingConfirm)} className="flex-[2] bg-rose-500 text-white px-10 py-7 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl shadow-rose-500/20 active:scale-95 transition-all">Vincular à Agenda</button>
+                           <button onClick={() => setShowBookingConfirm(null)} className="flex-1 py-7 rounded-[2rem] font-black uppercase tracking-widest text-xs text-slate-400 hover:text-slate-600 transition-colors">Descartar</button>
+                           <button onClick={() => confirmBooking(showBookingConfirm)} className="flex-[2] bg-rose-500 text-white px-10 py-7 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl shadow-rose-500/20 active:scale-95 transition-all">Salvar Agendamento</button>
                         </div>
                      </div>
                   </div>
@@ -576,20 +590,20 @@ export default function App() {
                <div className="glass-card rounded-[4.5rem] luxury-shadow overflow-hidden border-white/60">
                   <div className="bg-slate-900/95 p-20 text-white text-center relative overflow-hidden">
                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent animate-pulse"></div>
-                     <h3 className="text-5xl font-display font-bold">Parelhamento Seguro</h3>
-                     <p className="mt-4 text-slate-400 text-xl font-medium">Use o QR Code para conectar a Bella IA ao seu WhatsApp Business.</p>
+                     <h3 className="text-5xl font-display font-bold">Conexão Bella IA</h3>
+                     <p className="mt-4 text-slate-400 text-xl font-medium">Sincronize seu dispositivo para automação total.</p>
                   </div>
                   
                   <div className="p-20 grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
                      <div className="space-y-12">
                         {isConnected ? (
                           <div className="text-center space-y-10">
-                             <div className="w-24 h-24 bg-emerald-500/20 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mx-auto border-2 border-emerald-500/30 shadow-inner">
+                             <div className="w-24 h-24 bg-emerald-500/20 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mx-auto border-2 border-emerald-500/30 shadow-inner animate-pulse">
                                 <CheckCircle2 className="w-14 h-14" />
                              </div>
                              <div>
-                                <h4 className="text-4xl font-display font-bold text-slate-900">Conectado com Sucesso</h4>
-                                <p className="text-slate-600 font-medium mt-3 text-lg">Seu salão agora está sendo monitorado 24h.</p>
+                                <h4 className="text-4xl font-display font-bold text-slate-900">Vínculo Ativo</h4>
+                                <p className="text-slate-600 font-medium mt-3 text-lg">Suas mensagens estão sendo processadas.</p>
                              </div>
                              <div className="space-y-4">
                                <button 
@@ -598,23 +612,23 @@ export default function App() {
                                >
                                  {isSyncing ? 'Monitoria Ativa' : 'Pausar Escuta'}
                                </button>
-                               <button onClick={() => setIsConnected(false)} className="text-slate-300 hover:text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">Desconectar Aparelho</button>
+                               <button onClick={() => setIsConnected(false)} className="text-slate-300 hover:text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] transition-colors">Encerrar Sessão</button>
                              </div>
                           </div>
                         ) : (
                           <div className="space-y-10">
                              <div className="space-y-6">
-                               <div className="flex items-start space-x-4">
-                                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-black text-slate-900">1</div>
-                                  <p className="text-slate-700 font-medium leading-relaxed">Abra o WhatsApp no seu celular principal.</p>
+                               <div className="flex items-start space-x-4 group">
+                                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-black text-slate-900 group-hover:bg-rose-500 group-hover:text-white transition-colors">1</div>
+                                  <p className="text-slate-700 font-medium leading-relaxed">Gere o QR Code de segurança exclusivo para sua conta.</p>
                                </div>
-                               <div className="flex items-start space-x-4">
-                                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-black text-slate-900">2</div>
-                                  <p className="text-slate-700 font-medium leading-relaxed">Toque em <b>Aparelhos Conectados</b> e <b>Conectar um Aparelho</b>.</p>
+                               <div className="flex items-start space-x-4 group">
+                                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-black text-slate-900 group-hover:bg-rose-500 group-hover:text-white transition-colors">2</div>
+                                  <p className="text-slate-700 font-medium leading-relaxed">Clique no código gerado para <b>simular o escaneamento</b> do seu WhatsApp.</p>
                                </div>
-                               <div className="flex items-start space-x-4">
-                                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center shrink-0 font-black text-slate-900">3</div>
-                                  <p className="text-slate-700 font-medium leading-relaxed">Aponte a câmera para o QR Code ao lado.</p>
+                               <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 flex space-x-4 items-start">
+                                  <Info className="w-6 h-6 text-amber-500 shrink-0" />
+                                  <p className="text-[10px] text-amber-700 leading-relaxed font-bold uppercase tracking-wider">Como este é um ambiente de preview, a conexão real com o aplicativo WhatsApp exige um servidor backend Node.js.</p>
                                </div>
                              </div>
                              
@@ -622,13 +636,13 @@ export default function App() {
                                <button 
                                 onClick={generateQRCode} 
                                 disabled={isGeneratingQR}
-                                className="w-full bg-slate-900 hover:bg-black text-white font-black py-8 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-4 transition-all"
+                                className="w-full bg-slate-900 hover:bg-black text-white font-black py-8 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-4 transition-all active:scale-95"
                                >
-                                 {isGeneratingQR ? <Loader2 className="w-8 h-8 animate-spin text-rose-500" /> : <><span>Gerar QR Code Agora</span> <QrCode className="w-6 h-6" /></>}
+                                 {isGeneratingQR ? <Loader2 className="w-8 h-8 animate-spin text-rose-500" /> : <><span>Gerar QR de Sessão</span> <QrCode className="w-6 h-6" /></>}
                                </button>
                              ) : (
                                <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 text-center animate-pulse">
-                                  <p className="text-rose-600 font-bold text-sm">Escaneie o código no seu celular para continuar...</p>
+                                  <p className="text-rose-600 font-bold text-sm">Escaneie o código clicando nele!</p>
                                </div>
                              )}
                           </div>
@@ -636,35 +650,53 @@ export default function App() {
                      </div>
                      
                      <div className="flex flex-col items-center">
-                        <div className="p-5 bg-slate-900/95 rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative group cursor-pointer" onClick={simulateScan}>
-                           <div className="bg-white p-12 rounded-[3rem] relative overflow-hidden flex items-center justify-center min-w-[300px] min-h-[300px]">
+                        <div 
+                          className={`p-5 bg-slate-900/95 rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative group overflow-hidden ${!isConnected && qrCodeData ? 'cursor-pointer' : 'cursor-default'}`} 
+                          onClick={simulateScan}
+                        >
+                           <div className="bg-white p-12 rounded-[3rem] relative overflow-hidden flex items-center justify-center min-w-[320px] min-h-[320px]">
                               {isGeneratingQR ? (
-                                <Loader2 className="w-20 h-20 text-rose-500 animate-spin" />
+                                <div className="text-center space-y-4">
+                                   <Loader2 className="w-20 h-20 text-rose-500 animate-spin mx-auto" />
+                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Enviando Token...</p>
+                                </div>
                               ) : qrCodeData ? (
                                 <img src={qrCodeData} alt="WhatsApp QR Code" className="w-64 h-64 animate-in zoom-in-50 duration-500" />
                               ) : isConnected ? (
                                 <div className="text-center animate-in zoom-in-50 duration-700">
                                    <Smartphone className="w-32 h-32 text-slate-900 mb-6 mx-auto animate-bounce-slow" />
-                                   <p className="text-emerald-500 font-black text-xs uppercase tracking-widest">Sincronizado</p>
+                                   <div className="bg-emerald-100 text-emerald-600 px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg">Sincronizado</div>
                                 </div>
                               ) : (
                                 <div className="text-center opacity-10">
                                    <QrCode className="w-64 h-64 text-slate-900" />
+                                   <p className="mt-4 font-black text-xs uppercase tracking-widest">Inativo</p>
                                 </div>
                               )}
                               
-                              {qrCodeData && (
-                                <div className="absolute inset-0 bg-white/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                                   <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-2xl">Clique para Simular Scan</div>
+                              {qrCodeData && !isAuthenticating && (
+                                <div className="absolute inset-0 bg-rose-500/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm text-white p-10 text-center">
+                                   <Smartphone className="w-16 h-16 mb-4 animate-bounce" />
+                                   <p className="font-black uppercase tracking-widest text-sm mb-2">Simular Scan</p>
+                                   <p className="text-[10px] font-medium opacity-80">Clique aqui para vincular esta sessão simulada.</p>
+                                </div>
+                              )}
+
+                              {isAuthenticating && (
+                                <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-white space-y-6 animate-in fade-in duration-500">
+                                   <div className="relative">
+                                      <RefreshCw className="w-20 h-20 animate-spin text-rose-500" />
+                                      <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-white opacity-0 animate-pulse" />
+                                   </div>
+                                   <div className="text-center">
+                                      <p className="font-black uppercase tracking-[0.3em] text-xs mb-2">Autenticando...</p>
+                                      <div className="w-32 h-1 bg-white/10 rounded-full mx-auto overflow-hidden">
+                                         <div className="h-full bg-rose-500 w-1/2 animate-[progress_2s_ease-in-out_infinite]"></div>
+                                      </div>
+                                   </div>
                                 </div>
                               )}
                            </div>
-                           {isSyncing && !isConnected && (
-                             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md rounded-[4rem] flex flex-col items-center justify-center text-white space-y-6">
-                                <RefreshCw className="w-16 h-16 animate-spin text-rose-500" />
-                                <p className="font-black uppercase tracking-[0.3em] text-xs">Autenticando...</p>
-                             </div>
-                           )}
                         </div>
                      </div>
                   </div>
@@ -679,12 +711,12 @@ export default function App() {
                    <Scissors className="w-16 h-16" />
                 </div>
                 <div className="space-y-4">
-                  <h3 className="text-5xl font-display font-bold text-slate-900 tracking-tight">Elegância em Refinamento</h3>
+                  <h3 className="text-5xl font-display font-bold text-slate-900 tracking-tight">Recursos Premium</h3>
                   <p className="text-slate-700 max-w-lg mx-auto font-medium text-xl leading-relaxed">
-                    Bella está polindo as ferramentas avançadas de {activeView === 'appointments' ? 'agendamento inteligente' : 'relatórios preditivos'}. Em breve para você.
+                    Bella está processando os dados históricos. A agenda e os relatórios avançados serão liberados após os primeiros agendamentos.
                   </p>
                 </div>
-                <button onClick={() => setActiveView('dashboard')} className="bg-white/50 border border-white hover:bg-white px-12 py-5 rounded-[2.5rem] text-slate-900 font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-all active:scale-95">Voltar ao Centro de Comando</button>
+                <button onClick={() => setActiveView('dashboard')} className="bg-white/50 border border-white hover:bg-white px-12 py-5 rounded-[2.5rem] text-slate-900 font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-all active:scale-95">Ir para Dashboard</button>
              </div>
           )}
         </div>
@@ -704,6 +736,10 @@ export default function App() {
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
+        }
+        @keyframes progress {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
         }
         .animate-bounce-slow {
           animation: bounce-slow 3s ease-in-out infinite;
