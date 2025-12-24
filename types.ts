@@ -27,10 +27,18 @@ export interface IncomingMessage {
   detectedBooking?: any;
 }
 
+export interface InstanceConfig {
+  apiUrl: string;
+  apiKey: string;
+  instanceName: string;
+  provider: 'local' | 'evolution' | 'z-api' | 'cloud-demo';
+}
+
 export interface SalonConfig {
   name: string;
   niche: string;
   setupComplete: boolean;
+  instance?: InstanceConfig;
 }
 
-export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection' | 'onboarding';
+export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection' | 'onboarding' | 'settings';
