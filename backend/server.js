@@ -1,15 +1,13 @@
 const express = require("express");
 const cors = require("cors");
-const helmet = require("helmet");
 require("dotenv").config();
 const { analyzeMessage } = require("./gemini");
 const { supabase } = require("./supabase");
 
 const app = express();
 
-// 🔹 Segurança e middlewares
-app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL || "*" })); // restringir para seu frontend
+// 🔹 Middlewares básicos
+app.use(cors());
 app.use(express.json());
 
 // 🔹 Porta dinâmica
@@ -58,7 +56,6 @@ app.post("/webhook", async (req, res) => {
     const value = changes?.value;
     const message = value?.messages?.[0];
 
-    // Ignorar se não houver mensagem de texto
     if (!message || !message.text) return res.sendStatus(200);
 
     const phoneNumberId = value.metadata.phone_number_id;
@@ -134,4 +131,3 @@ app.post("/webhook", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-
