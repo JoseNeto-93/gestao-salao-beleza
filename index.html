@@ -9,6 +9,14 @@
     <title>BellaFlow - Luxury Salon Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+    <script>
+      // Browser compatibility shim for process.env
+      window.process = {
+        env: {
+          API_KEY: "" // Will be populated by Vercel environment or manual entry
+        }
+      };
+    </script>
     <style>
         :root {
             --primary-magenta: #ff007a;
@@ -38,7 +46,6 @@
             overflow-x: hidden;
         }
 
-        /* Camada Master de Imagem de Fundo */
         .salon-background-system {
             position: fixed;
             top: 0;
@@ -50,11 +57,10 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.20; /* Opacidade ajustada para 20% para ser perceptível e elegante */
+            opacity: 0.20;
             pointer-events: none;
         }
 
-        /* Gradientes de Profundidade */
         .salon-gradient-overlay {
             position: fixed;
             top: 0;
@@ -124,7 +130,7 @@
 
         @media (max-width: 640px) {
             .dn3j-signature {
-                bottom: 110px; /* Acima do menu mobile */
+                bottom: 110px;
                 right: 16px;
                 font-size: 8px;
             }
@@ -150,7 +156,6 @@
 <script type="module" src="index.tsx"></script>
 </head>
 <body class="antialiased">
-    <!-- Imagem de fundo estruturada -->
     <div class="salon-background-system"></div>
     <div class="salon-gradient-overlay"></div>
     

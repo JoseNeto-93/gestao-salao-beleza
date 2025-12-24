@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -15,13 +14,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Configurações de Rede para Render
+// Configurações de Rede - Essencial para Render/Heroku/Fly.io
 const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0';
+const HOST = '0.0.0.0'; // IMPORTANTE: Deve ser 0.0.0.0 para ser acessível externamente no Render
 
-// Rota raiz para Health Check do Render
+// Rota raiz para Health Check
 app.get("/", (req, res) => {
-  res.status(200).send("BellaFlow API: Status OK 🚀");
+  res.status(200).send("BellaFlow API: Status OK 🚀 - Running on ESM Node.js");
 });
 
 // Status detalhado para o frontend
@@ -42,7 +41,6 @@ app.get("/webhook", (req, res) => {
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  // Verifica o token configurado no painel da Meta
   if (mode === "subscribe" && token === process.env.META_VERIFY_TOKEN) {
     console.log("✅ Webhook Meta validado com sucesso!");
     return res.status(200).send(challenge);
@@ -62,7 +60,6 @@ app.post("/webhook", async (req, res) => {
     const value = changes?.value;
     const message = value?.messages?.[0];
 
-    // Ignorar se não for mensagem de texto
     if (!message || !message.text) return res.sendStatus(200);
 
     const phoneNumberId = value.metadata.phone_number_id;
@@ -71,7 +68,6 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`📩 Mensagem de ${from} [ID: ${phoneNumberId}]: ${text}`);
 
-    // 1. Gerenciar Identidade do Salão (Multi-tenant)
     let { data: salon, error: salonError } = await supabase
       .from("salons")
       .select("*")
@@ -93,7 +89,6 @@ app.post("/webhook", async (req, res) => {
       salon = newSalon;
     }
 
-    // 2. Persistir Mensagem no Banco
     const { data: msgRow, error: msgError } = await supabase
       .from("messages")
       .insert({
@@ -107,7 +102,6 @@ app.post("/webhook", async (req, res) => {
 
     if (msgError) throw msgError;
 
-    // 3. IA: Processamento de Intenção com Gemini
     const suggestion = await analyzeMessage(text);
 
     if (suggestion) {
@@ -124,8 +118,6 @@ app.post("/webhook", async (req, res) => {
       
       if (!sugError) {
         console.log(`✨ Sugestão Gerada para: ${salon.name}`);
-      } else {
-        console.error("❌ Erro ao salvar sugestão:", sugError.message);
       }
     }
 
@@ -136,11 +128,11 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-// Inicialização do Servidor
+// Inicialização do Servidor escutando no HOST 0.0.0.0
 app.listen(PORT, HOST, () => {
   console.log(`\n================================================`);
-  console.log(`🚀 BellaFlow Backend em Produção`);
+  console.log(`🚀 BellaFlow Backend Online`);
   console.log(`📡 Host: ${HOST} | Porta: ${PORT}`);
-  console.log(`🔗 Webhook: http://${HOST}:${PORT}/webhook`);
+  console.log(`🔗 Webhook Ativo: http://${HOST}:${PORT}/webhook`);
   console.log(`================================================\n`);
 });

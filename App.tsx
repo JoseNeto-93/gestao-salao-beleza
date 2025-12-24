@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, 
@@ -29,8 +28,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Appointment, View, SalonConfig } from './types';
 import { INITIAL_SERVICES } from './constants';
 import { extractAppointmentFromText, suggestSalonBranding } from './services/geminiService';
-
-// --- UI Components: Premium Design System ---
 
 const MetricCard = ({ title, value, trend, icon, delay = "0" }: any) => (
   <div 
@@ -88,8 +85,6 @@ const MobileNavItem = ({ icon, label, active, onClick }: any) => (
     <span className="text-[7px] sm:text-[8px] font-black mt-1 uppercase tracking-widest">{label}</span>
   </button>
 );
-
-// --- Video Presentation Component ---
 
 const VideoPresentation = ({ onClose, onFinish }: { onClose: () => void, onFinish: () => void }) => {
   const [scene, setScene] = useState(1);
@@ -222,7 +217,8 @@ export default function App() {
   });
 
   const [backendUrl, setBackendUrl] = useState(() => {
-    return localStorage.getItem('bellaflow_backend_url') || 'http://localhost:3000';
+    // Priority: Saved storage > Environment variable shim > Localhost
+    return localStorage.getItem('bellaflow_backend_url') || (window as any).CONFIG_BACKEND_URL || 'http://localhost:3000';
   });
 
   const [activeView, setActiveView] = useState<View>(() => {
@@ -390,7 +386,6 @@ export default function App() {
 
   return (
     <div className="flex h-screen flex-col lg:flex-row overflow-hidden relative">
-      {/* Sidebar Desktop */}
       <aside className="w-80 bg-black/40 backdrop-blur-3xl border-r border-white/5 flex flex-col p-8 hidden lg:flex z-50">
         <div className="flex items-center space-x-4 mb-16 px-4">
           <div className="w-12 h-12 bg-gradient-to-tr from-[#ff007a] to-[#7000ff] rounded-2xl flex items-center justify-center text-white shadow-xl glow-soft">
@@ -605,7 +600,6 @@ export default function App() {
           )}
         </div>
 
-        {/* Modal: AI Confirmation */}
         {tempBooking && (
           <div className="fixed inset-0 z-[100] bg-[#05010d]/95 backdrop-blur-3xl flex items-end sm:items-center justify-center p-4 sm:p-6">
             <div className="glass-card p-8 sm:p-12 lg:p-16 rounded-[2.5rem] sm:rounded-[4rem] max-w-2xl w-full text-center border-[#ff007a]/40 animate-in zoom-in duration-500 shadow-[0_0_100px_rgba(255,0,122,0.2)]">
@@ -638,13 +632,17 @@ export default function App() {
         )}
       </main>
 
-      {/* Mobile Nav */}
       <nav className="fixed bottom-0 left-0 right-0 h-20 sm:h-24 bg-black/60 backdrop-blur-3xl flex items-center justify-around px-4 sm:px-6 lg:hidden z-[100] border-t border-white/5 pb-safe">
         <MobileNavItem icon={<LayoutDashboard />} label="Início" active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')} />
         <MobileNavItem icon={<Calendar />} label="Agenda" active={activeView === 'appointments'} onClick={() => setActiveView('appointments')} />
         <MobileNavItem icon={<Target />} label="IA" active={activeView === 'whatsapp'} onClick={() => setActiveView('whatsapp')} />
         <MobileNavItem icon={<Play />} label="Vídeo" active={(activeView as string) === 'video_presentation'} onClick={() => setActiveView('video_presentation')} />
       </nav>
+
+      {/* Dn3j Discreet Footer */}
+      <footer className="fixed bottom-1 right-2 text-[6px] text-white/5 uppercase tracking-widest pointer-events-none hidden lg:block">
+        Proudly crafted by Dn3j
+      </footer>
     </div>
   );
 }
