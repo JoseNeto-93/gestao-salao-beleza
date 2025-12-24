@@ -1,53 +1,59 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-const { analyzeMessage } = require("./gemini");
-const { supabase } = require("./supabase");
+
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import { analyzeMessage } from "./gemini.js";
+import { supabase } from "./supabase.js";
+
+// Carrega variáveis de ambiente
+dotenv.config();
 
 const app = express();
 
-// 🔹 Middlewares básicos
+// Middlewares essenciais
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// 🔹 Porta dinâmica
+// Configurações de Rede para Render
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
-// 🔹 Rota raiz (teste)
+// Rota raiz para Health Check do Render
 app.get("/", (req, res) => {
-  res.send("Backend BellaFlow rodando 🚀");
+  res.status(200).send("BellaFlow API: Status OK 🚀");
 });
 
-// 🔎 STATUS (Monitoramento pelo Frontend)
+// Status detalhado para o frontend
 app.get("/status", (req, res) => {
   res.json({ 
     status: "CONNECTED",
     mode: "Cloud API",
-    tenancy: "Multi-Tenant Active"
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
   });
 });
 
 /**
- * ✅ WEBHOOK VERIFICAÇÃO (GET)
- * Usado pela Meta para validar seu servidor.
+ * Webhook de Validação da Meta (GET)
  */
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
+  // Verifica o token configurado no painel da Meta
   if (mode === "subscribe" && token === process.env.META_VERIFY_TOKEN) {
-    console.log("✅ Webhook BellaFlow validado com sucesso!");
+    console.log("✅ Webhook Meta validado com sucesso!");
     return res.status(200).send(challenge);
-  } else {
-    console.warn(`⚠️ Tentativa de validação webhook falhou. Mode: ${mode}, Token: ${token}`);
-    return res.sendStatus(403);
   }
+  
+  console.warn("⚠️ Falha na validação do Webhook. Token incorreto.");
+  return res.sendStatus(403);
 });
 
 /**
- * 📩 WEBHOOK MENSAGENS (POST)
- * Processa mensagens de qualquer salão conectado via Cloud API.
+ * Webhook de Mensagens (POST)
  */
 app.post("/webhook", async (req, res) => {
   try {
@@ -56,16 +62,17 @@ app.post("/webhook", async (req, res) => {
     const value = changes?.value;
     const message = value?.messages?.[0];
 
+    // Ignorar se não for mensagem de texto
     if (!message || !message.text) return res.sendStatus(200);
 
     const phoneNumberId = value.metadata.phone_number_id;
     const from = message.from;
     const text = message.text.body;
 
-    console.log(`📩 [Salão: ${phoneNumberId}] Mensagem de ${from}: ${text}`);
+    console.log(`📩 Mensagem de ${from} [ID: ${phoneNumberId}]: ${text}`);
 
-    // 1️⃣ Localizar Salão ou criar
-    let { data: salon } = await supabase
+    // 1. Gerenciar Identidade do Salão (Multi-tenant)
+    let { data: salon, error: salonError } = await supabase
       .from("salons")
       .select("*")
       .eq("phone_number_id", phoneNumberId)
@@ -74,28 +81,25 @@ app.post("/webhook", async (req, res) => {
     if (!salon) {
       const { data: newSalon, error: createError } = await supabase
         .from("salons")
-        .upsert({
+        .insert({
           phone_number_id: phoneNumberId,
           name: `Salão BellaFlow (${phoneNumberId.slice(-4)})`,
           is_active: true
         })
         .select()
         .single();
-
-      if (createError) {
-        console.error("❌ Erro criando salão:", createError.message);
-        throw createError;
-      }
+      
+      if (createError) throw createError;
       salon = newSalon;
     }
 
-    // 2️⃣ Salvar mensagem
+    // 2. Persistir Mensagem no Banco
     const { data: msgRow, error: msgError } = await supabase
       .from("messages")
       .insert({
         salon_id: salon.id,
         from_number: from,
-        text,
+        text: text,
         source: "whatsapp_cloud"
       })
       .select()
@@ -103,31 +107,40 @@ app.post("/webhook", async (req, res) => {
 
     if (msgError) throw msgError;
 
-    // 3️⃣ IA: Analisar agendamento
+    // 3. IA: Processamento de Intenção com Gemini
     const suggestion = await analyzeMessage(text);
 
     if (suggestion) {
-      await supabase.from("ai_suggestions").insert({
+      const { error: sugError } = await supabase.from("ai_suggestions").insert({
         salon_id: salon.id,
         message_id: msgRow.id,
         client_name: suggestion.clientName || "Cliente",
-        service: suggestion.service || "Não identificado",
+        service: suggestion.service || "Serviço pendente",
         date: suggestion.date,
         time: suggestion.time,
         price: suggestion.estimatedPrice,
         status: "pending"
       });
-      console.log(`✨ Sugestão gerada: ${suggestion.service} para ${suggestion.clientName} em ${suggestion.date} ${suggestion.time}`);
+      
+      if (!sugError) {
+        console.log(`✨ Sugestão Gerada para: ${salon.name}`);
+      } else {
+        console.error("❌ Erro ao salvar sugestão:", sugError.message);
+      }
     }
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Erro Webhook Cloud:", err);
-    res.status(500).json({ error: "Erro interno no servidor" });
+    console.error("❌ Erro crítico no Webhook:", err.message);
+    res.sendStatus(500);
   }
 });
 
-// 🔹 Listen com host correto
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Inicialização do Servidor
+app.listen(PORT, HOST, () => {
+  console.log(`\n================================================`);
+  console.log(`🚀 BellaFlow Backend em Produção`);
+  console.log(`📡 Host: ${HOST} | Porta: ${PORT}`);
+  console.log(`🔗 Webhook: http://${HOST}:${PORT}/webhook`);
+  console.log(`================================================\n`);
 });
