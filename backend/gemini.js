@@ -1,22 +1,15 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// Inicialização resiliente da IA
-const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey: apiKey });
+// Initialize the Google GenAI client directly with the API key from the environment.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Analisa mensagens via Gemini para extrair dados de agendamento.
  */
 export async function analyzeMessage(text) {
-  if (!apiKey) {
-    console.warn("⚠️ Gemini API Key não configurada. IA desativada.");
-    return null;
-  }
-
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -41,7 +34,7 @@ export async function analyzeMessage(text) {
       }
     });
 
-    // O SDK retorna um objeto cuja propriedade .text contém o JSON gerado
+    // The response.text property contains the generated JSON string.
     const result = JSON.parse(response.text);
     return result.isBooking ? result : null;
   } catch (error) {
