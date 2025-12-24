@@ -1,94 +1,128 @@
 
-/**
- * SERVIDOR BACKEND BELLAFLOW (NODE.JS)
- * Instruções:
- * 1. Instale o Node.js em sua máquina.
- * 2. Execute: npm install express whatsapp-web.js qrcode cors
- * 3. Execute: node server.js
- */
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import { analyzeMessage } from "./gemini.js";
+import { supabase } from "./supabase.js";
 
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode');
-const express = require('express');
-const cors = require('cors');
+dotenv.config();
+
 const app = express();
-const port = 3001;
-
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-let lastQr = "";
-let status = "DISCONNECTED"; // DISCONNECTED, CONNECTING, CONNECTED
-let clientReady = false;
+// 🔎 STATUS (Monitoramento pelo Frontend)
+app.get("/status", (req, res) => {
+  res.json({ 
+    status: "CONNECTED",
+    mode: "Cloud API",
+    tenancy: "Multi-Tenant Active"
+  });
+});
 
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        handleSIGINT: false,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+/**
+ * ✅ WEBHOOK VERIFICAÇÃO (GET)
+ * Usado pela Meta para validar seu servidor.
+ */
+app.get("/webhook", (req, res) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (mode === "subscribe" && token === process.env.META_VERIFY_TOKEN) {
+    console.log("✅ Webhook BellaFlow validado com sucesso!");
+    return res.status(200).send(challenge);
+  }
+  return res.sendStatus(403);
+});
+
+/**
+ * 📩 WEBHOOK MENSAGENS (POST)
+ * Processa mensagens de qualquer salão conectado via Cloud API.
+ */
+app.post("/webhook", async (req, res) => {
+  try {
+    const entry = req.body.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+    const message = value?.messages?.[0];
+
+    // Ignorar se não houver mensagem de texto
+    if (!message || !message.text) return res.sendStatus(200);
+
+    const phoneNumberId = value.metadata.phone_number_id; // Identificador único do salão
+    const from = message.from; // Número da cliente
+    const text = message.text.body;
+
+    console.log(`📩 [Salão: ${phoneNumberId}] Mensagem de ${from}: ${text}`);
+
+    // 1. Localizar Salão (ou criar novo salão se for o primeiro acesso)
+    let { data: salon, error: salonError } = await supabase
+      .from("salons")
+      .select("*")
+      .eq("phone_number_id", phoneNumberId)
+      .single();
+
+    if (!salon) {
+      const { data: newSalon, error: createError } = await supabase
+        .from("salons")
+        .insert({
+          phone_number_id: phoneNumberId,
+          name: `Salão BellaFlow (${phoneNumberId.slice(-4)})`,
+          is_active: true
+        })
+        .select()
+        .single();
+      
+      if (createError) throw createError;
+      salon = newSalon;
     }
-});
 
-client.on('qr', (qr) => {
-    console.log('QR RECEIVED', qr);
-    lastQr = qr;
-    status = "WAITING_FOR_SCAN";
-});
+    // 2. Salvar mensagem no histórico do salão
+    const { data: msgRow, error: msgError } = await supabase
+      .from("messages")
+      .insert({
+        salon_id: salon.id,
+        from_number: from,
+        text,
+        source: "whatsapp_cloud"
+      })
+      .select()
+      .single();
 
-client.on('ready', () => {
-    console.log('CLIENT IS READY');
-    status = "CONNECTED";
-    clientReady = true;
-    lastQr = "";
-});
+    if (msgError) throw msgError;
 
-client.on('authenticated', () => {
-    console.log('AUTHENTICATED');
-    status = "AUTHENTICATING";
-});
+    // 3. IA: Analisar se existe uma intenção de agendamento/venda
+    const suggestion = await analyzeMessage(text);
 
-client.on('auth_failure', msg => {
-    console.error('AUTHENTICATION FAILURE', msg);
-    status = "DISCONNECTED";
-});
-
-client.on('disconnected', (reason) => {
-    console.log('Client was logged out', reason);
-    status = "DISCONNECTED";
-    clientReady = false;
-    client.initialize();
-});
-
-// Inicializa o cliente
-client.initialize();
-
-// Endpoints da API
-app.get('/status', (req, res) => {
-    res.json({ status, ready: clientReady });
-});
-
-app.get('/qr', async (req, res) => {
-    if (lastQr) {
-        try {
-            const qrImage = await qrcode.toDataURL(lastQr);
-            res.json({ qr: qrImage });
-        } catch (err) {
-            res.status(500).json({ error: "Failed to generate QR image" });
-        }
-    } else {
-        res.json({ qr: null, message: status === "CONNECTED" ? "Already connected" : "QR not ready" });
+    if (suggestion) {
+      // 4. Salvar como sugestão pendente para o usuário confirmar no sistema
+      await supabase.from("ai_suggestions").insert({
+        salon_id: salon.id,
+        message_id: msgRow.id,
+        client_name: suggestion.clientName || "Cliente",
+        service: suggestion.service || "Não identificado",
+        date: suggestion.date,
+        time: suggestion.time,
+        price: suggestion.estimatedPrice,
+        status: "pending"
+      });
+      console.log(`✨ Sugestão gerada para o salão ${salon.id}`);
     }
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("❌ Erro Webhook Cloud:", err.message);
+    res.sendStatus(500);
+  }
 });
 
-app.post('/logout', async (req, res) => {
-    try {
-        await client.logout();
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Logout failed" });
-    }
-});
-
-app.listen(port, () => {
-    console.log(`Backend BellaFlow rodando em http://localhost:${port}`);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`\n================================================`);
+  console.log(`🚀 BellaFlow Multi-Tenant Cloud API Online`);
+  console.log(`📡 Porta: ${PORT}`);
+  console.log(`✅ Webhook: http://localhost:${PORT}/webhook`);
+  console.log(`================================================\n`);
 });

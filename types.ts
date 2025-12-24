@@ -16,6 +16,7 @@ export interface Appointment {
   time: string; // HH:mm
   status: 'Pendente' | 'Confirmado' | 'Concluído' | 'Cancelado';
   price: number;
+  createdAt?: string;
 }
 
 export interface IncomingMessage {
@@ -25,6 +26,12 @@ export interface IncomingMessage {
   timestamp: string;
   processed: boolean;
   detectedBooking?: any;
+}
+
+export interface DbConfig {
+  supabaseUrl: string;
+  supabaseKey: string;
+  isConnected: boolean;
 }
 
 export interface InstanceConfig {
@@ -39,6 +46,7 @@ export interface SalonConfig {
   niche: string;
   setupComplete: boolean;
   instance?: InstanceConfig;
+  db?: DbConfig;
 }
 
-export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection' | 'onboarding' | 'settings';
+export type View = 'dashboard' | 'appointments' | 'whatsapp' | 'analytics' | 'connection' | 'onboarding' | 'settings' | 'cloud' | 'video_presentation';

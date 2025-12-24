@@ -4,607 +4,655 @@ import {
   LayoutDashboard, 
   Calendar, 
   MessageCircle, 
-  BarChart3, 
-  Plus, 
-  Search, 
-  Bell, 
-  CheckCircle2, 
   DollarSign, 
   TrendingUp,
-  User,
   Scissors,
   Smartphone,
-  QrCode,
   Zap,
-  RefreshCw,
-  X,
-  Check,
   ChevronRight,
-  Settings,
-  Code2,
   Sparkles,
-  ArrowRight,
   Loader2,
-  Info,
-  ShieldCheck,
-  Lock,
-  Globe,
+  CheckCircle2,
   AlertTriangle,
-  Server,
-  Key,
-  Database
+  Plus,
+  Bell,
+  User,
+  Code2,
+  ArrowUpRight,
+  Globe,
+  Cloud,
+  Layers,
+  Target,
+  Copy,
+  ExternalLink,
+  Crown,
+  Heart,
+  Star,
+  Play,
+  X,
+  Smartphone as PhoneIcon,
+  MousePointer2
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Appointment, Service, View, IncomingMessage, SalonConfig, InstanceConfig } from './types';
+import { Appointment, View, IncomingMessage, SalonConfig } from './types';
 import { INITIAL_SERVICES } from './constants';
 import { extractAppointmentFromText, suggestSalonBranding } from './services/geminiService';
 
-// --- Components Premium ---
+// --- Componentes Premium Refinados ---
 
-const SidebarItem: React.FC<{ 
-  icon: React.ReactNode; 
-  label: string; 
-  active: boolean; 
-  onClick: () => void 
-}> = ({ icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center space-x-3 px-4 py-4 rounded-2xl transition-all duration-300 group ${
-      active 
-        ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' 
-        : 'text-slate-400 hover:text-white hover:bg-white/5'
-    }`}
-  >
-    <div className={`${active ? 'text-white' : 'text-slate-500 group-hover:text-rose-400'} transition-colors`}>
-      {icon}
-    </div>
-    <span className="font-semibold text-sm">{label}</span>
-  </button>
-);
-
-const MetricCard: React.FC<{ title: string; value: string; trend: string; icon: React.ReactNode }> = ({ 
-  title, value, trend, icon
-}) => (
-  <div className="glass-card p-8 rounded-[2.5rem] luxury-shadow relative overflow-hidden group">
-    <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-0"></div>
+const MetricCard = ({ title, value, trend, icon, color = "magenta" }: any) => (
+  <div className="glass-card p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] luxury-shadow relative overflow-hidden group transition-all border-t border-white/10 active:scale-[0.98]">
+    <div className={`absolute -right-6 -top-6 w-32 h-32 bg-[#ff007a]/10 rounded-full blur-2xl transition-all duration-700`}></div>
     <div className="relative z-10">
-      <div className="flex justify-between items-start mb-6">
-        <div className="p-4 bg-slate-900/90 rounded-2xl text-rose-500 shadow-xl">
-          {icon}
+      <div className="flex justify-between items-start mb-4 sm:mb-6">
+        <div className="p-3 bg-white/10 rounded-xl text-[#ff007a] shadow-inner border border-white/10 glow-magenta">
+          {React.cloneElement(icon, { size: 18 })}
         </div>
-        {value !== "0" && value !== "R$ 0" && (
-          <div className="flex flex-col items-end">
-            <span className="text-emerald-700 text-xs font-black flex items-center bg-emerald-100/40 px-2 py-1 rounded-full border border-emerald-500/20 backdrop-blur-sm">
-              <TrendingUp className="w-3 h-3 mr-1" /> {trend}
-            </span>
-          </div>
+        {trend && (
+          <span className="text-[9px] font-black bg-[#ff007a]/20 text-white px-2.5 py-1 rounded-full flex items-center border border-[#ff007a]/30 backdrop-blur-md">
+            <TrendingUp className="w-2.5 h-2.5 mr-1" /> {trend}
+          </span>
         )}
       </div>
-      <h3 className="text-slate-700 text-xs font-bold uppercase tracking-widest">{title}</h3>
-      <p className="text-3xl font-display font-bold text-slate-900 mt-2">{value}</p>
+      <p className="text-[8px] sm:text-[9px] font-bold text-white/50 uppercase tracking-[0.25em] mb-0.5 sm:mb-1">{title}</p>
+      <h3 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight text-shadow">{value}</h3>
     </div>
   </div>
 );
 
+const SidebarItem = ({ icon, label, active, onClick }: any) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${
+      active 
+        ? 'bg-gradient-to-r from-[#ff007a] to-[#d40062] text-white shadow-xl shadow-[#ff007a]/30 border border-white/10' 
+        : 'text-white/50 hover:text-white hover:bg-white/5'
+    }`}
+  >
+    <div className={`${active ? 'text-white' : 'text-[#ff007a]/60 group-hover:text-[#ff007a]'} transition-colors`}>{icon}</div>
+    <span className="font-bold text-sm tracking-tight">{label}</span>
+  </button>
+);
+
+const MobileNavItem = ({ icon, label, active, onClick }: any) => (
+  <button
+    onClick={onClick}
+    className={`flex flex-col items-center justify-center flex-1 py-3 transition-all ${
+      active ? 'text-[#ff007a]' : 'text-white/40'
+    }`}
+  >
+    <div className={`${active ? 'animate-pulse' : ''}`}>
+      {React.cloneElement(icon, { size: 20 })}
+    </div>
+    <span className="text-[9px] font-bold mt-1 uppercase tracking-wider">{label}</span>
+  </button>
+);
+
+// --- Componente de Vídeo de Apresentação (Motion Graphics) ---
+
+const VideoPresentation = ({ onClose, onFinish }: { onClose: () => void, onFinish: () => void }) => {
+  const [scene, setScene] = useState(1);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          if (scene < 5) {
+            setScene(s => s + 1);
+            return 0;
+          } else {
+            clearInterval(timer);
+            return 100;
+          }
+        }
+        return prev + 0.5;
+      });
+    }, 50);
+
+    return () => clearInterval(timer);
+  }, [scene]);
+
+  const renderScene = () => {
+    switch(scene) {
+      case 1: // O Problema
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in zoom-in duration-700">
+            <div className="relative mb-12">
+              <MessageCircle className="w-24 h-24 text-red-500/50 blur-[2px] animate-pulse" />
+              <div className="absolute -top-4 -right-4 bg-red-500 text-white p-2 rounded-full animate-bounce">
+                <AlertTriangle size={24} />
+              </div>
+            </div>
+            <h3 className="text-4xl font-display font-black text-white mb-6 leading-tight">
+              Você perde clientes no <span className="text-red-500">WhatsApp?</span>
+            </h3>
+            <p className="text-white/40 text-lg">Confusão de horários e anotações manuais estão matando seu lucro.</p>
+          </div>
+        );
+      case 2: // A Solução
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in slide-in-from-bottom duration-700">
+            <div className="w-32 h-32 bg-gradient-to-br from-[#ff007a] to-[#d40062] rounded-3xl flex items-center justify-center mb-12 shadow-[0_0_50px_rgba(255,0,122,0.4)] glow-magenta border border-white/20">
+              <Layers className="w-16 h-16 text-white" />
+            </div>
+            <h3 className="text-4xl font-display font-black text-white mb-6 leading-tight">
+              Seu WhatsApp agora <br/> <span className="text-[#ff007a] text-glow italic">trabalha por você</span>
+            </h3>
+            <p className="text-white/60 text-lg">BellaFlow: O cérebro do seu salão.</p>
+          </div>
+        );
+      case 3: // A IA
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in zoom-in duration-700">
+            <div className="w-full max-w-xs glass-card p-6 rounded-3xl mb-12 border-[#ff007a]/30 relative overflow-hidden">
+               <div className="flex items-center space-x-3 mb-4 opacity-50">
+                  <div className="w-8 h-8 rounded-full bg-white/10"></div>
+                  <div className="h-3 w-24 bg-white/20 rounded"></div>
+               </div>
+               <div className="h-4 w-full bg-white/10 rounded mb-2"></div>
+               <div className="h-4 w-3/4 bg-white/10 rounded mb-6"></div>
+               
+               <div className="bg-[#ff007a]/10 border border-[#ff007a]/30 p-4 rounded-2xl animate-pulse">
+                  <div className="flex items-center space-x-2 text-[#ff007a] mb-2">
+                     <Zap size={14} />
+                     <span className="text-[10px] font-black uppercase tracking-widest">IA Extraindo...</span>
+                  </div>
+                  <div className="h-3 w-1/2 bg-[#ff007a]/40 rounded"></div>
+               </div>
+            </div>
+            <h3 className="text-3xl font-display font-black text-white mb-6">
+              A IA sugere agendamentos <br/> <span className="text-[#ff007a]">em segundos</span>
+            </h3>
+            <p className="text-white/40 text-base">Extração automática de datas, serviços e preços.</p>
+          </div>
+        );
+      case 4: // Mobile First
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in slide-in-from-right duration-700">
+            <div className="relative mb-12">
+               <div className="w-48 h-80 border-4 border-white/10 rounded-[3rem] p-4 bg-black/40 backdrop-blur-xl relative overflow-hidden">
+                  <div className="w-20 h-1.5 bg-white/10 rounded-full mx-auto mb-6"></div>
+                  <div className="space-y-3">
+                     <div className="h-20 w-full bg-[#ff007a]/5 rounded-2xl border border-white/5"></div>
+                     <div className="grid grid-cols-2 gap-2">
+                        <div className="h-16 bg-white/5 rounded-xl"></div>
+                        <div className="h-16 bg-white/5 rounded-xl"></div>
+                     </div>
+                  </div>
+                  <MousePointer2 className="absolute bottom-10 right-10 text-[#ff007a] animate-bounce" />
+               </div>
+            </div>
+            <h3 className="text-4xl font-display font-bold text-white mb-6">
+              Funciona 100% <br/> <span className="text-[#ff007a]">no celular</span>
+            </h3>
+            <p className="text-white/40 text-lg">Sem computador. Sem burocracia.</p>
+          </div>
+        );
+      case 5: // CTA
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in zoom-in duration-700">
+            <Crown className="w-20 h-20 text-[#ff007a] mb-8 glow-magenta" />
+            <h3 className="text-5xl font-display font-black text-white mb-8 leading-tight">
+              Organize seu <br/> salão hoje
+            </h3>
+            <button 
+              onClick={onFinish}
+              className="btn-magenta text-white px-12 py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-2xl animate-float"
+            >
+              Começar Agora
+            </button>
+            <div className="mt-16 opacity-30 text-[10px] font-black uppercase tracking-[0.4em]">
+              Desenvolvido por DN3J
+            </div>
+          </div>
+        );
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-[#0a0118] flex flex-col items-center justify-center overflow-hidden">
+      {/* Background decorativo */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50rem] h-[50rem] bg-[#ff007a]/15 rounded-full blur-[120px]"></div>
+      </div>
+
+      <button 
+        onClick={onClose}
+        className="absolute top-8 right-8 p-3 bg-white/5 border border-white/10 rounded-full text-white/50 hover:text-white transition-all z-[210]"
+      >
+        <X size={24} />
+      </button>
+
+      {/* Progress Bar Top */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
+        <div 
+          className="h-full bg-gradient-to-r from-[#ff007a] to-[#d40062] transition-all duration-100"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+
+      <div className="relative z-[205] w-full h-full max-w-lg aspect-[9/16]">
+        {renderScene()}
+      </div>
+
+      {/* Scene Indicators */}
+      <div className="absolute bottom-12 flex space-x-3">
+        {[1, 2, 3, 4, 5].map(s => (
+          <div 
+            key={s}
+            className={`h-1 rounded-full transition-all duration-500 ${
+              s === scene ? 'w-8 bg-[#ff007a]' : 'w-2 bg-white/10'
+            }`}
+          ></div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [salon, setSalon] = useState<SalonConfig>(() => {
-    const saved = localStorage.getItem('bella_salon_config_v3');
-    return saved ? JSON.parse(saved) : { 
-      name: '', 
-      niche: '', 
-      setupComplete: false,
-      instance: {
-        apiUrl: 'http://localhost:3001',
-        apiKey: '',
-        instanceName: 'bella_default',
-        provider: 'cloud-demo'
-      }
-    };
+    const saved = localStorage.getItem('bellaflow_pro_v3');
+    return saved ? JSON.parse(saved) : { name: '', setupComplete: false, niche: 'Beauty' };
+  });
+
+  const [backendUrl, setBackendUrl] = useState(() => {
+    return localStorage.getItem('bellaflow_backend_url') || 'http://localhost:3001';
+  });
+
+  const [activeView, setActiveView] = useState<View>(() => {
+    if (!salon.setupComplete) return 'onboarding';
+    return 'dashboard';
+  });
+
+  const [appointments, setAppointments] = useState<Appointment[]>(() => {
+    const saved = localStorage.getItem('bellaflow_appointments_v3');
+    return saved ? JSON.parse(saved) : [];
   });
   
-  const [activeView, setActiveView] = useState<View>(salon.setupComplete ? 'dashboard' : 'onboarding');
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [services] = useState<Service[]>(INITIAL_SERVICES);
-  const [isProcessingMsg, setIsProcessingMsg] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [waMessage, setWaMessage] = useState('');
-  const [showBookingConfirm, setShowBookingConfirm] = useState<any>(null);
-  
-  // Estado da Conexão
-  const [isApiOnline, setIsApiOnline] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connStatus, setConnStatus] = useState<'idle' | 'connecting' | 'waiting' | 'ready' | 'error'>('idle');
-  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
-  
-  const [incomingMessages, setIncomingMessages] = useState<IncomingMessage[]>([]);
-  const [setupInput, setSetupInput] = useState('');
+  const [connStatus, setConnStatus] = useState('OFFLINE');
+  const [tempBooking, setTempBooking] = useState<any>(null);
 
-  // Persistência
   useEffect(() => {
-    localStorage.setItem('bella_salon_config_v3', JSON.stringify(salon));
-  }, [salon]);
+    localStorage.setItem('bellaflow_pro_v3', JSON.stringify(salon));
+    localStorage.setItem('bellaflow_appointments_v3', JSON.stringify(appointments));
+    localStorage.setItem('bellaflow_backend_url', backendUrl);
+  }, [salon, appointments, backendUrl]);
 
-  // Monitor de API (Polling)
   useEffect(() => {
-    if (salon.instance?.provider === 'cloud-demo') {
-      setIsApiOnline(true);
-      return;
-    }
-
-    const checkApi = async () => {
+    const checkConnection = async () => {
       try {
-        const response = await fetch(`${salon.instance?.apiUrl}/status`);
-        const data = await response.json();
-        setIsApiOnline(true);
-        if (data.status === 'CONNECTED') {
-          setIsConnected(true);
-          setConnStatus('ready');
-          setQrCodeData(null);
-        } else if (data.status === 'WAITING_FOR_SCAN') {
-          setConnStatus('waiting');
-          fetchQr();
-        }
-      } catch (err) {
-        setIsApiOnline(false);
-        setConnStatus('error');
+        const res = await fetch(`${backendUrl}/status`);
+        const data = await res.json();
+        setConnStatus(data.status);
+      } catch (e) {
+        setConnStatus('OFFLINE_SERVER');
       }
     };
+    const interval = setInterval(checkConnection, 5000);
+    checkConnection();
+    return () => clearInterval(interval);
+  }, [backendUrl]);
 
-    const fetchQr = async () => {
-      try {
-        const response = await fetch(`${salon.instance?.apiUrl}/qr`);
-        const data = await response.json();
-        if (data.qr) setQrCodeData(data.qr);
-      } catch (e) {}
-    };
-
-    const timer = setInterval(checkApi, 5000);
-    checkApi();
-    return () => clearInterval(timer);
-  }, [salon.instance]);
-
-  // Simulador de Mensagens (Só quando conectado)
-  useEffect(() => {
-    if (isConnected || salon.instance?.provider === 'cloud-demo') {
-      const interval = setInterval(async () => {
-        if (Math.random() > 0.8) {
-          const clients = ['Juliana Oliveira', 'Bia Nunes', 'Fernanda Lima', 'Carla Santos'];
-          const texts = [
-            "Oi, quero marcar um corte para amanhã às 10h",
-            "Olá! Tem horário para manicure hoje?",
-            "Pode agendar uma selagem para sexta às 14h?",
-            "Quanto está a escova hoje?"
-          ];
-          const newMsg: IncomingMessage = {
-            id: Date.now().toString(),
-            sender: clients[Math.floor(Math.random()*clients.length)],
-            text: texts[Math.floor(Math.random()*texts.length)],
-            timestamp: new Date().toLocaleTimeString(),
-            processed: false
-          };
-          setIncomingMessages(prev => [newMsg, ...prev].slice(0, 10));
-        }
-      }, 12000);
-      return () => clearInterval(interval);
-    }
-  }, [isConnected, salon.instance?.provider]);
-
-  const totalRevenue = useMemo(() => appointments.reduce((sum, app) => sum + app.price, 0), [appointments]);
+  const totalRevenue = useMemo(() => appointments.reduce((sum, a) => sum + a.price, 0), [appointments]);
   
-  const revenueData = useMemo(() => {
-    return appointments.map((a, i) => ({ 
-      date: a.time, 
-      amount: appointments.slice(0, i + 1).reduce((acc, curr) => acc + curr.price, 0) 
+  const revenueChartData = useMemo(() => {
+    if (appointments.length === 0) return [{ date: 'Inicio', valor: 0 }];
+    return appointments.map((a, i) => ({
+      date: a.time,
+      valor: appointments.slice(0, i + 1).reduce((acc, curr) => acc + curr.price, 0)
     }));
   }, [appointments]);
 
-  const topServices = useMemo(() => {
-    const counts: Record<string, number> = {};
-    appointments.forEach(app => counts[app.serviceName] = (counts[app.serviceName] || 0) + 1);
-    return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count).slice(0, 5);
-  }, [appointments]);
-
-  const handleOnboarding = async () => {
-    if (!setupInput.trim()) return;
-    setIsProcessingMsg(true);
+  const handleOnboarding = async (val: string) => {
+    if (!val.trim()) return;
+    setIsProcessing(true);
     try {
-      const result = await suggestSalonBranding(setupInput);
-      setSalon({ ...salon, name: result.salonName, setupComplete: true });
+      const result = await suggestSalonBranding(val);
+      setSalon({ name: result.salonName, setupComplete: true, niche: 'Beauty' });
       setActiveView('dashboard');
     } catch (e) {
-      setSalon({ ...salon, name: setupInput, setupComplete: true });
+      setSalon({ name: val, setupComplete: true, niche: 'Beauty' });
       setActiveView('dashboard');
     } finally {
-      setIsProcessingMsg(false);
+      setIsProcessing(false);
     }
   };
 
-  const confirmBooking = (bookingData: any) => {
-    const matchedService = services.find(s => s.name.toLowerCase().includes(bookingData.serviceName.toLowerCase())) || services[0];
+  const processMessage = async (text: string) => {
+    if (!text.trim()) return;
+    setIsProcessing(true);
+    try {
+      const result = await extractAppointmentFromText(text);
+      setTempBooking(result);
+    } catch (e) {
+      alert("Erro ao analisar mensagem.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const confirmBooking = () => {
+    if (!tempBooking) return;
+    const service = INITIAL_SERVICES.find(s => 
+      s.name.toLowerCase().includes(tempBooking.serviceName.toLowerCase())
+    ) || INITIAL_SERVICES[0];
+
     const newApp: Appointment = {
       id: Math.random().toString(36).substr(2, 9),
-      clientName: bookingData.clientName,
-      serviceId: matchedService.id,
-      serviceName: matchedService.name,
-      date: bookingData.date,
-      time: bookingData.time,
+      clientName: tempBooking.clientName,
+      serviceId: service.id,
+      serviceName: service.name,
+      date: tempBooking.date,
+      time: tempBooking.time,
       status: 'Confirmado',
-      price: matchedService.price
+      price: service.price,
+      createdAt: new Date().toISOString()
     };
-    setAppointments(prev => [newApp, ...prev]);
-    setShowBookingConfirm(null);
+
+    setAppointments(prev => [...prev, newApp]);
+    setTempBooking(null);
+    setWaMessage('');
+    setActiveView('dashboard');
   };
+
+  // Use a temporary variable or cast to bypass unintentional narrowing if early returns confuse the compiler
+  const isVideoView = (activeView as string) === 'video_presentation';
+
+  if (isVideoView) {
+    return (
+      <VideoPresentation 
+        onClose={() => setActiveView(salon.setupComplete ? 'dashboard' : 'onboarding')} 
+        onFinish={() => {
+          if (salon.setupComplete) setActiveView('dashboard');
+          else setActiveView('onboarding');
+        }}
+      />
+    );
+  }
 
   if (activeView === 'onboarding') {
     return (
-      <div className="h-screen w-full flex items-center justify-center p-6 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974&auto=format&fit=crop')" }}>
-        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-2xl"></div>
-        <div className="glass-card max-w-2xl w-full p-16 rounded-[4rem] luxury-shadow relative z-10 animate-in zoom-in-95 border-white/40">
-           <div className="text-center mb-12">
-              <Sparkles className="w-16 h-16 text-rose-500 mx-auto mb-8 animate-pulse" />
-              <h1 className="text-5xl font-display font-bold text-slate-900">BellaFlow SaaS</h1>
-              <p className="text-slate-700 mt-6 text-xl font-medium">Bem-vinda! Como se chama o seu salão?</p>
-           </div>
-           <input 
-             autoFocus
-             type="text" 
-             value={setupInput}
-             onChange={(e) => setSetupInput(e.target.value)}
-             className="w-full bg-white/60 border-2 border-white/80 p-8 rounded-[2.5rem] text-3xl font-display outline-none text-slate-900 text-center mb-8 focus:ring-8 focus:ring-rose-500/10 transition-all"
-             placeholder="Ex: Studio Bella..."
-           />
-           <button 
-             onClick={handleOnboarding}
-             disabled={!setupInput.trim() || isProcessingMsg}
-             className="w-full bg-slate-900 text-white font-black py-8 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-4 active:scale-95 transition-all"
-           >
-             {isProcessingMsg ? <Loader2 className="animate-spin" /> : <span>Começar Agora</span>}
-           </button>
+      <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 relative z-10 overflow-y-auto">
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+           <div className="absolute top-[10%] left-[5%] w-[40rem] h-[40rem] bg-[#ff007a]/30 rounded-full blur-[100px] sm:blur-[150px]"></div>
+        </div>
+
+        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center relative z-20">
+          <div className="text-center lg:text-left space-y-6 lg:space-y-8 animate-in slide-in-from-bottom lg:slide-in-from-left duration-1000">
+             <div className="flex items-center justify-center lg:justify-start space-x-3 text-[#ff007a]">
+                <Crown className="w-5 h-5 glow-magenta" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80">Management SaaS</span>
+             </div>
+             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-black text-white leading-[1.2] lg:leading-[1.1] tracking-tight">
+                Seu Salão <br/> 
+                <span className="text-[#ff007a] text-glow italic">Magnetizado</span>
+             </h1>
+             <p className="text-white/70 text-base sm:text-lg lg:text-xl font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed backdrop-blur-sm p-4 rounded-2xl bg-black/10">
+                Atraia mais clientes e escale seu faturamento com gestão de elite pelo celular.
+             </p>
+             
+             <div className="flex justify-center lg:justify-start pt-4">
+                <button 
+                  onClick={() => setActiveView('video_presentation')}
+                  className="flex items-center space-x-4 glass-card px-8 py-5 rounded-2xl border border-[#ff007a]/30 hover:border-[#ff007a]/60 transition-all group active:scale-95"
+                >
+                  <div className="w-12 h-12 bg-[#ff007a] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,0,122,0.4)] group-hover:scale-110 transition-transform">
+                    <Play className="text-white ml-1" fill="currentColor" size={20} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-[#ff007a]">Vídeo Importante</p>
+                    <p className="text-sm font-bold text-white">Sua transformação começa aqui</p>
+                  </div>
+                </button>
+             </div>
+          </div>
+
+          <div className="glass-card p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3.5rem] text-center border-t border-white/20 relative overflow-hidden group animate-in slide-in-from-bottom duration-1000">
+             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#ff007a] to-[#d40062] rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl rotate-3 glow-magenta animate-float border border-white/20">
+                <Scissors className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+             </div>
+             <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-6">Comece Agora</h2>
+             
+             <div className="space-y-4 text-left max-w-sm mx-auto">
+                <input 
+                  type="text" 
+                  id="salonInput"
+                  placeholder="Nome do seu Espaço"
+                  className="w-full bg-black/40 border border-white/20 p-5 rounded-2xl text-lg font-medium outline-none focus:border-[#ff007a]/60 transition-all text-center text-white placeholder:text-white/30 backdrop-blur-md"
+                  onKeyDown={(e) => e.key === 'Enter' && handleOnboarding(e.currentTarget.value)}
+                />
+                <button 
+                  onClick={() => handleOnboarding((document.getElementById('salonInput') as HTMLInputElement).value)}
+                  className="w-full btn-magenta text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl flex items-center justify-center space-x-3"
+                >
+                   {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : <><span>Acessar Painel VIP</span> <ChevronRight className="w-4 h-4" /></>}
+                </button>
+             </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <aside className="w-80 sidebar-dark flex flex-col p-8 hidden lg:flex border-r border-white/5">
-        <div className="flex items-center space-x-4 mb-16">
-          <div className="w-12 h-12 bg-rose-500 rounded-xl flex items-center justify-center text-white shadow-xl">
-            <Scissors className="w-6 h-6" />
+    <div className="flex h-screen flex-col lg:flex-row overflow-hidden relative z-10">
+      {/* Sidebar Desktop */}
+      <aside className="w-72 sidebar-dark flex flex-col p-8 hidden lg:flex relative z-30">
+        <div className="flex items-center space-x-3 mb-14 px-2">
+          <div className="w-10 h-10 bg-gradient-to-tr from-[#ff007a] to-[#d40062] rounded-xl flex items-center justify-center text-white glow-magenta border border-white/10">
+            <Layers className="w-5 h-5" />
           </div>
-          <h1 className="text-xl font-display font-bold text-white truncate">{salon.name}</h1>
+          <h1 className="text-lg font-display font-bold text-white truncate tracking-tight">{salon.name}</h1>
         </div>
-
         <nav className="flex-1 space-y-3">
-          <SidebarItem icon={<LayoutDashboard />} label="Dashboard" active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')} />
-          <SidebarItem icon={<Calendar />} label="Agenda" active={activeView === 'appointments'} onClick={() => setActiveView('appointments')} />
-          <SidebarItem icon={<MessageCircle />} label="Mensagens IA" active={activeView === 'whatsapp'} onClick={() => setActiveView('whatsapp')} />
-          <SidebarItem icon={<Smartphone />} label="Conexão WA" active={activeView === 'connection'} onClick={() => setActiveView('connection')} />
-          <SidebarItem icon={<Settings />} label="Ajustes API" active={activeView === 'settings'} onClick={() => setActiveView('settings')} />
+          <SidebarItem icon={<LayoutDashboard size={20} />} label="Faturamento" active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')} />
+          <SidebarItem icon={<Calendar size={20} />} label="Agenda IA" active={activeView === 'appointments'} onClick={() => setActiveView('appointments')} />
+          <SidebarItem icon={<Target size={20} />} label="Extrair Vendas" active={activeView === 'whatsapp'} onClick={() => setActiveView('whatsapp')} />
+          <SidebarItem icon={<Smartphone size={20} />} label="Conectar WA" active={activeView === 'connection'} onClick={() => setActiveView('connection')} />
+          <SidebarItem icon={<Play size={20} />} label="Apresentação" active={(activeView as any) === 'video_presentation'} onClick={() => setActiveView('video_presentation')} />
         </nav>
-
-        <div className="mt-auto pt-6 border-t border-white/10">
-           <div className={`flex items-center space-x-3 p-4 rounded-2xl ${isConnected || salon.instance?.provider === 'cloud-demo' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${isConnected || salon.instance?.provider === 'cloud-demo' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
-              <span className="text-[10px] font-black uppercase tracking-widest">{isConnected || salon.instance?.provider === 'cloud-demo' ? 'Link Ativo' : 'Sem Link'}</span>
-           </div>
+        <div className="mt-auto space-y-6">
+          <div className={`p-5 rounded-2xl transition-colors backdrop-blur-md ${connStatus === 'CONNECTED' ? 'bg-[#ff007a]/10 border border-[#ff007a]/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+             <div className="flex items-center justify-between">
+                <span className={`text-[8px] font-black uppercase tracking-widest ${connStatus === 'CONNECTED' ? 'text-[#ff007a]' : 'text-red-400'}`}>
+                   {connStatus === 'CONNECTED' ? 'CLOUD API: ONLINE' : 'CLOUD API: OFFLINE'}
+                </span>
+                <div className={`w-1.5 h-1.5 rounded-full ${connStatus === 'CONNECTED' ? 'bg-[#ff007a] shadow-[0_0_8px_#ff007a]' : 'bg-red-500'}`}></div>
+             </div>
+          </div>
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-y-auto bg-transparent relative custom-scrollbar">
-        <header className="h-20 bg-white/20 backdrop-blur-3xl border-b border-white/30 flex items-center justify-between px-10 sticky top-0 z-50">
-           <h2 className="text-2xl font-display font-bold text-slate-900 capitalize">{activeView}</h2>
-           <div className="flex items-center space-x-4">
-              <button onClick={() => {localStorage.clear(); window.location.reload();}} className="p-2 text-slate-400 hover:text-rose-500 transition-colors"><RefreshCw className="w-5 h-5" /></button>
-              <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">{salon.name[0]}</div>
-           </div>
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col overflow-y-auto custom-scrollbar relative z-20 pb-24 lg:pb-0">
+        <header className="h-20 lg:h-24 bg-black/40 backdrop-blur-3xl border-b border-white/10 flex items-center justify-between px-6 lg:px-12 sticky top-0 z-50">
+          <div className="flex flex-col">
+            <h2 className="text-xl lg:text-3xl font-display font-bold text-white tracking-tight capitalize drop-shadow-sm">{activeView}</h2>
+            <span className="text-[8px] lg:hidden font-black text-white/30 uppercase tracking-widest">{salon.name}</span>
+          </div>
+          <div className="flex items-center space-x-4 lg:space-x-8">
+             <div className="text-right">
+                <p className="text-[8px] lg:text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-0.5 sm:mb-1">Total</p>
+                <p className="text-lg lg:text-2xl font-bold text-white glow-text">R$ {totalRevenue.toLocaleString()}</p>
+             </div>
+             <button className="p-2.5 bg-white/5 border border-white/10 rounded-full active:bg-white/10 transition-colors backdrop-blur-md">
+                <Bell size={18} className="text-white/70" />
+             </button>
+          </div>
         </header>
 
-        <div className="p-10">
+        <div className="p-4 sm:p-8 lg:p-12 space-y-8 lg:space-y-12">
           {activeView === 'dashboard' && (
-            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-500">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard title="Receita Hoje" value={`R$ ${totalRevenue.toLocaleString()}`} trend="+R$ 0" icon={<DollarSign />} />
-                <MetricCard title="Agendados" value={appointments.length.toString()} trend="0" icon={<Calendar />} />
-                <MetricCard title="Conversas" value={incomingMessages.length.toString()} trend="0" icon={<MessageCircle />} />
-                <MetricCard title="Conversão" value={appointments.length > 0 ? "92%" : "0%"} trend="0%" icon={<Zap />} />
+            <div className="space-y-8 lg:space-y-12 animate-in fade-in duration-500">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                <MetricCard title="Receita" value={`R$ ${totalRevenue.toLocaleString()}`} trend="+24%" icon={<DollarSign />} />
+                <MetricCard title="Agenda" value={appointments.length.toString()} icon={<Calendar />} />
+                <MetricCard title="IA" value="Premium" icon={<Zap />} />
+                <MetricCard title="Eficácia" value="99.8%" icon={<TrendingUp />} />
               </div>
 
-              {appointments.length === 0 ? (
-                <div className="glass-card p-24 rounded-[3.5rem] text-center border-white/50 bg-white/30 luxury-shadow">
-                   <div className="w-20 h-20 bg-white/60 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-                      <Database className="w-10 h-10 text-slate-300" />
-                   </div>
-                   <h3 className="text-3xl font-display font-bold text-slate-900 mb-4">Seu Painel está Pronto</h3>
-                   <p className="text-slate-600 max-w-md mx-auto mb-10 text-lg leading-relaxed">Conecte seu WhatsApp para que a Bella comece a capturar agendamentos e gerar seu faturamento automaticamente.</p>
-                   <button onClick={() => setActiveView('connection')} className="bg-slate-900 text-white px-12 py-5 rounded-[2rem] font-bold shadow-2xl hover:bg-black transition-all">Configurar Canal de Entrada</button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                   <div className="lg:col-span-2 glass-card p-10 rounded-[3rem] luxury-shadow">
-                      <h3 className="text-xl font-display font-bold text-slate-900 mb-8">Evolução do Faturamento</h3>
-                      <div className="h-[350px]">
-                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
-                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                               <XAxis dataKey="date" hide />
-                               <Tooltip contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)'}} />
-                               <Area type="monotone" dataKey="amount" stroke="#f43f5e" fill="rgba(244, 63, 94, 0.08)" strokeWidth={4} />
-                            </AreaChart>
-                         </ResponsiveContainer>
-                      </div>
-                   </div>
-                   <div className="glass-dark p-10 rounded-[3rem] text-white shadow-2xl">
-                      <h3 className="text-xl font-display font-bold mb-8">Ranking de Serviços</h3>
-                      <div className="space-y-5">
-                         {topServices.map((s, i) => (
-                           <div key={i} className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/10">
-                              <span className="font-bold text-sm tracking-tight">{s.name}</span>
-                              <span className="text-rose-400 font-black text-xs px-3 py-1 bg-rose-500/10 rounded-full">{s.count}x</span>
-                           </div>
-                         ))}
-                      </div>
-                   </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeView === 'settings' && (
-            <div className="max-w-4xl mx-auto py-10 animate-in zoom-in-95 duration-500">
-               <div className="bg-white rounded-[3.5rem] luxury-shadow overflow-hidden border border-slate-100">
-                  <div className="bg-slate-900 p-12 text-white">
-                     <h3 className="text-3xl font-display font-bold flex items-center">
-                        <Server className="mr-4 text-rose-500" />
-                        Configurações da API SaaS
-                     </h3>
-                     <p className="mt-2 opacity-60">Escolha como sua instância do WhatsApp será gerenciada.</p>
-                  </div>
-                  
-                  <div className="p-12 space-y-10">
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[
-                          { id: 'cloud-demo', label: 'Cloud Demo', icon: <Globe className="w-5 h-5" />, desc: 'Simulação via nuvem Bella.' },
-                          { id: 'local', label: 'Servidor Local', icon: <Smartphone className="w-5 h-5" />, desc: 'Usa seu backend node pessoal.' },
-                          { id: 'evolution', label: 'Evolution API', icon: <Zap className="w-5 h-5" />, desc: 'API profissional em VPS.' }
-                        ].map((provider) => (
-                          <button 
-                            key={provider.id}
-                            onClick={() => setSalon({ ...salon, instance: { ...salon.instance!, provider: provider.id as any } })}
-                            className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${salon.instance?.provider === provider.id ? 'border-rose-500 bg-rose-50' : 'border-slate-100 hover:border-slate-200'}`}
-                          >
-                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${salon.instance?.provider === provider.id ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                                {provider.icon}
-                             </div>
-                             <p className="font-bold text-slate-900">{provider.label}</p>
-                             <p className="text-[10px] text-slate-500 mt-1 uppercase font-black tracking-widest">{provider.desc}</p>
-                          </button>
-                        ))}
-                     </div>
-
-                     {salon.instance?.provider !== 'cloud-demo' && (
-                       <div className="space-y-6 bg-slate-50 p-10 rounded-[3rem] border border-slate-100 animate-in slide-in-from-top-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">URL da API do Provedor</label>
-                                <input 
-                                  type="text" 
-                                  value={salon.instance?.apiUrl}
-                                  onChange={(e) => setSalon({...salon, instance: {...salon.instance!, apiUrl: e.target.value}})}
-                                  className="w-full bg-white p-6 rounded-3xl border border-slate-200 outline-none focus:border-rose-500 font-mono text-xs"
-                                />
-                             </div>
-                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nome da Instância</label>
-                                <input 
-                                  type="text" 
-                                  value={salon.instance?.instanceName}
-                                  onChange={(e) => setSalon({...salon, instance: {...salon.instance!, instanceName: e.target.value}})}
-                                  className="w-full bg-white p-6 rounded-3xl border border-slate-200 outline-none focus:border-rose-500 font-mono text-xs"
-                                />
-                             </div>
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">API Key / Token de Acesso</label>
-                             <div className="relative">
-                                <input 
-                                  type="password" 
-                                  value={salon.instance?.apiKey}
-                                  onChange={(e) => setSalon({...salon, instance: {...salon.instance!, apiKey: e.target.value}})}
-                                  className="w-full bg-white p-6 rounded-3xl border border-slate-200 outline-none focus:border-rose-500 font-mono text-xs pr-16"
-                                />
-                                <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                             </div>
-                          </div>
-                       </div>
-                     )}
-
-                     <div className="flex justify-end">
-                        <button onClick={() => setActiveView('dashboard')} className="bg-slate-900 text-white px-12 py-5 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all">Salvar Configurações</button>
-                     </div>
-                  </div>
-               </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                 <div className="lg:col-span-2 glass-card p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] h-[300px] sm:h-[450px]">
+                    <div className="flex justify-between items-center mb-6 sm:mb-8">
+                       <h4 className="font-bold text-white/70 tracking-wide uppercase text-[8px] sm:text-[10px]">Crescimento</h4>
+                    </div>
+                    <ResponsiveContainer width="100%" height="85%">
+                      <AreaChart data={revenueChartData}>
+                        <defs>
+                          <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ff007a" stopOpacity={0.4}/>
+                            <stop offset="95%" stopColor="#ff007a" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="date" hide />
+                        <Tooltip 
+                           contentStyle={{backgroundColor: 'rgba(22, 8, 41, 0.95)', border: '1px solid rgba(255,0,122,0.4)', borderRadius: '12px', backdropFilter: 'blur(20px)'}}
+                           itemStyle={{color: '#ff007a', fontWeight: '800'}}
+                        />
+                        <Area type="monotone" dataKey="valor" stroke="#ff007a" fillOpacity={1} fill="url(#colorVal)" strokeWidth={3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                 </div>
+                 <div className="glass-card p-8 rounded-[1.5rem] sm:rounded-[2.5rem] flex flex-col justify-center items-center text-center space-y-4 sm:space-y-6">
+                    <Heart className="text-[#ff007a] w-8 h-8 drop-shadow-md glow-magenta" />
+                    <h5 className="text-lg font-display font-bold text-white">Mindset Premium</h5>
+                    <p className="text-white/60 text-xs sm:text-sm leading-relaxed">"O luxo está nos detalhes da sua gestão."</p>
+                    <button 
+                      onClick={() => setActiveView('video_presentation')}
+                      className="text-[#ff007a] text-[10px] font-black uppercase tracking-widest flex items-center space-x-2"
+                    >
+                      <Play size={10} fill="currentColor" />
+                      <span>Ver Apresentação</span>
+                    </button>
+                 </div>
+              </div>
             </div>
           )}
 
           {activeView === 'connection' && (
-            <div className="max-w-5xl mx-auto py-10 animate-in zoom-in-95">
-               <div className="bg-white rounded-[4rem] luxury-shadow overflow-hidden border border-slate-100">
-                  <div className="bg-[#128C7E] p-16 text-white text-center">
-                     <Smartphone className="w-16 h-16 mx-auto mb-6" />
-                     <h3 className="text-4xl font-display font-bold">Vincular Canal WhatsApp</h3>
-                     <p className="mt-4 opacity-80 text-xl font-medium">Capture agendamentos diretamente do seu número.</p>
-                  </div>
-                  
-                  <div className="p-16 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                     <div className="space-y-10">
-                        <div className="space-y-6">
-                           {[
-                             "Abra o WhatsApp no seu celular principal.",
-                             "Vá em Aparelhos Conectados > Conectar um Aparelho.",
-                             "Escaneie o QR Code ao lado para iniciar a Bella IA."
-                           ].map((step, i) => (
-                             <div key={i} className="flex items-start space-x-6">
-                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 font-black text-slate-900 border border-slate-200">{i+1}</div>
-                                <p className="text-slate-700 font-medium text-lg leading-relaxed">{step}</p>
-                             </div>
-                           ))}
-                        </div>
-
-                        {salon.instance?.provider === 'cloud-demo' && (
-                           <div className="bg-rose-50 p-8 rounded-[2.5rem] border border-rose-100 flex items-start space-x-4">
-                              <Info className="w-6 h-6 text-rose-500 shrink-0 mt-1" />
-                              <div className="space-y-2">
-                                 <p className="font-bold text-rose-800">Modo Cloud Demo Ativo</p>
-                                 <p className="text-xs text-rose-600 leading-relaxed">Você está usando o provedor de demonstração. O QR Code abaixo é simulado para teste de interface. Para um QR Code real, mude para <b>Evolution API</b> ou <b>Servidor Local</b> em Ajustes.</p>
-                              </div>
-                           </div>
-                        )}
-
-                        <div className={`p-6 rounded-3xl border flex items-center space-x-4 ${isApiOnline ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
-                           {isApiOnline ? <CheckCircle2 /> : <AlertTriangle />}
-                           <div>
-                              <p className="font-black text-[10px] uppercase tracking-widest opacity-60">Status da API Gateway</p>
-                              <p className="text-sm font-bold">{isApiOnline ? 'Gateway Online & Pronto' : 'Gateway Desconectado'}</p>
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="flex flex-col items-center">
-                        <div className="bg-slate-900 p-12 rounded-[4rem] shadow-2xl relative min-w-[360px] min-h-[360px] flex items-center justify-center">
-                           {isConnected || salon.instance?.provider === 'cloud-demo' ? (
-                             <div className="text-center space-y-6 animate-in zoom-in-50">
-                                <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500/30">
-                                   <Smartphone className="w-12 h-12 text-emerald-400 animate-bounce" />
-                                </div>
-                                <div>
-                                   <p className="text-emerald-400 font-black text-xs uppercase tracking-[0.2em]">Dispositivo Ativo</p>
-                                   <p className="text-white/60 text-[10px] mt-2 font-medium">Instância: {salon.instance?.instanceName}</p>
-                                </div>
-                                <button onClick={() => setIsConnected(false)} className="text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline">Desconectar</button>
-                             </div>
-                           ) : qrCodeData ? (
-                             <div className="bg-white p-6 rounded-[2.5rem] animate-in fade-in">
-                                <img src={qrCodeData} alt="WhatsApp QR Code" className="w-64 h-64" />
-                             </div>
-                           ) : (
-                             <div className="text-center space-y-6">
-                                <Loader2 className="w-12 h-12 text-rose-500 animate-spin mx-auto" />
-                                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.25em]">Sincronizando Gateway...</p>
-                             </div>
-                           )}
-                           
-                           {connStatus === 'connecting' && (
-                             <div className="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-white rounded-[4rem] z-10">
-                                <RefreshCw className="w-16 h-16 animate-spin text-rose-500 mb-6" />
-                                <p className="font-bold tracking-tight">Vibrando servidor...</p>
-                             </div>
-                           )}
-                        </div>
-                     </div>
-                  </div>
-               </div>
+            <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom duration-500">
+              <div className="glass-card rounded-[2rem] sm:rounded-[4rem] overflow-hidden text-center p-8 sm:p-16">
+                <Smartphone className="w-12 h-12 mx-auto mb-6 text-[#ff007a] glow-magenta" />
+                <h3 className="text-2xl sm:text-4xl font-display font-bold text-white mb-2 sm:mb-4">Link Cloud</h3>
+                <p className="text-white/50 text-sm sm:text-lg mb-8 sm:mb-12">WhatsApp via API Oficial Meta.</p>
+                <div className="space-y-6 text-left">
+                   <div className="bg-black/40 p-6 rounded-2xl border border-white/10">
+                      <label className="text-[8px] font-black text-white/40 uppercase tracking-widest block mb-2">Endpoint Webhook</label>
+                      <code className="block text-[#ff007a] bg-black/60 p-4 rounded-xl text-[10px] font-mono break-all border border-[#ff007a]/20">
+                        {backendUrl}/webhook
+                      </code>
+                      <button className="mt-4 w-full text-center text-[#ff007a] font-bold text-[10px] uppercase tracking-widest active:scale-95 transition-transform">Copiar Link</button>
+                   </div>
+                   <div className={`p-6 rounded-2xl border flex items-center space-x-4 ${connStatus === 'CONNECTED' ? 'border-[#ff007a]/30 bg-[#ff007a]/5' : 'border-white/10 bg-white/5'}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${connStatus === 'CONNECTED' ? 'bg-[#ff007a] glow-magenta' : 'bg-white/10'}`}>
+                         {connStatus === 'CONNECTED' ? <CheckCircle2 size={18} className="text-white" /> : <Loader2 size={18} className="text-white animate-spin" />}
+                      </div>
+                      <div>
+                         <h4 className="font-bold text-sm text-white">{connStatus === 'CONNECTED' ? 'Ativo' : 'Verificando...'}</h4>
+                         <p className="text-white/40 text-[9px] uppercase tracking-wide">Cloud API v3.0</p>
+                      </div>
+                   </div>
+                </div>
+              </div>
             </div>
           )}
 
           {activeView === 'whatsapp' && (
-            <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in">
-               <div className="glass-card p-12 rounded-[3.5rem] flex justify-between items-center shadow-xl border-white/50">
-                  <div>
-                    <h3 className="text-3xl font-display font-bold text-slate-900">Monitor de Conversas IA</h3>
-                    <p className="text-slate-600 mt-2 font-medium">As conversas abaixo estão sendo analisadas pela Bella em tempo real.</p>
-                  </div>
+            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+               <div className="glass-card p-6 sm:p-16 rounded-[2rem] sm:rounded-[4rem]">
+                  <h4 className="text-xl sm:text-2xl font-display font-bold mb-6 flex items-center text-white">
+                     <Zap className="mr-2 text-[#ff007a] glow-magenta" /> Extrator IA
+                  </h4>
+                  <textarea 
+                    value={waMessage}
+                    onChange={(e) => setWaMessage(e.target.value)}
+                    placeholder="Cole as mensagens..."
+                    className="w-full bg-black/30 border border-white/10 rounded-2xl p-6 text-base h-48 sm:h-64 outline-none focus:border-[#ff007a]/50 transition-all text-white placeholder:text-white/20 backdrop-blur-xl"
+                  />
+                  <button 
+                    onClick={() => processMessage(waMessage)}
+                    disabled={isProcessing}
+                    className="mt-6 w-full btn-magenta py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl flex items-center justify-center space-x-3"
+                  >
+                    {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <span>Processar IA</span>}
+                  </button>
                </div>
+            </div>
+          )}
 
-               <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                  <div className="lg:col-span-2 glass-card rounded-[3rem] p-8 max-h-[650px] overflow-y-auto custom-scrollbar border-white/40 shadow-inner">
-                     <div className="space-y-5">
-                        {incomingMessages.map(msg => (
-                          <div key={msg.id} className="p-7 bg-white/60 rounded-[2.5rem] border border-white hover:border-rose-200 transition-all cursor-pointer group" onClick={() => setWaMessage(msg.text)}>
-                             <div className="flex justify-between mb-3">
-                                <span className="text-xs font-black text-rose-600 uppercase tracking-widest group-hover:scale-105 transition-transform">{msg.sender}</span>
-                                <span className="text-[10px] text-slate-400 font-bold">{msg.timestamp}</span>
-                             </div>
-                             <p className="text-sm text-slate-800 font-semibold leading-relaxed line-clamp-2">{msg.text}</p>
-                          </div>
-                        ))}
-                        {incomingMessages.length === 0 && <div className="py-32 text-center text-slate-300 font-bold uppercase text-[10px] tracking-[0.3em]">Aguardando mensagens...</div>}
-                     </div>
-                  </div>
-                  
-                  <div className="lg:col-span-3 glass-dark p-12 rounded-[4rem] text-white flex flex-col min-h-[550px] shadow-2xl relative overflow-hidden">
-                     <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 blur-[100px] -mr-32 -mt-32"></div>
-                     <h4 className="text-xl font-display font-bold mb-10 flex items-center space-x-4 relative z-10">
-                        <div className="w-10 h-10 bg-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20">
-                           <Zap className="text-white w-6 h-6" />
-                        </div>
-                        <span>Análise da Bella IA</span>
-                     </h4>
-                     <textarea 
-                       value={waMessage}
-                       onChange={(e) => setWaMessage(e.target.value)}
-                       placeholder="Selecione um chat ou digite uma intenção de agendamento aqui..."
-                       className="flex-1 bg-transparent border-none text-rose-50 text-3xl font-display outline-none resize-none placeholder:text-white/10 leading-relaxed relative z-10"
-                     />
-                     <button 
-                       onClick={async () => {
-                         setIsProcessingMsg(true);
-                         try {
-                           const res = await extractAppointmentFromText(waMessage);
-                           setShowBookingConfirm(res);
-                         } catch (e) {}
-                         setIsProcessingMsg(false);
-                       }}
-                       disabled={!waMessage.trim() || isProcessingMsg}
-                       className="mt-10 w-full bg-rose-500 py-8 rounded-[2.5rem] font-black uppercase text-sm shadow-2xl hover:bg-rose-600 disabled:opacity-20 active:scale-95 transition-all relative z-10"
-                     >
-                        {isProcessingMsg ? <Loader2 className="animate-spin mx-auto" /> : 'Confirmar Extração'}
-                     </button>
-                  </div>
+          {activeView === 'appointments' && (
+            <div className="glass-card rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden border border-white/10 animate-in slide-in-from-right duration-500">
+               <div className="overflow-x-auto">
+                 <table className="w-full text-left min-w-[500px]">
+                    <thead className="bg-black/60 text-white/50 backdrop-blur-xl">
+                       <tr>
+                          <th className="px-6 py-5 uppercase tracking-[0.2em] text-[8px] font-black">Cliente</th>
+                          <th className="px-6 py-5 uppercase tracking-[0.2em] text-[8px] font-black">Procedimento</th>
+                          <th className="px-6 py-5 uppercase tracking-[0.2em] text-[8px] font-black">Valor</th>
+                          <th className="px-6 py-5 uppercase tracking-[0.2em] text-[8px] font-black">Sinc</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                       {appointments.length > 0 ? appointments.map(app => (
+                          <tr key={app.id} className="active:bg-white/5 transition-colors">
+                             <td className="px-6 py-6">
+                                <div className="flex items-center space-x-3">
+                                   <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#ff007a] to-purple-600 flex items-center justify-center text-[10px] font-black border border-white/10">
+                                      {app.clientName.charAt(0)}
+                                   </div>
+                                   <span className="font-bold text-white/90 text-sm">{app.clientName}</span>
+                                </div>
+                             </td>
+                             <td className="px-6 py-6 text-white/60 text-xs">{app.serviceName}</td>
+                             <td className="px-6 py-6 font-black text-[#ff007a] text-sm">R$ {app.price}</td>
+                             <td className="px-6 py-6">
+                                <CheckCircle2 size={16} className="text-[#ff007a]" />
+                             </td>
+                          </tr>
+                       )) : (
+                         <tr>
+                           <td colSpan={4} className="px-6 py-20 text-center text-white/20 text-xs uppercase font-bold tracking-widest">Aguardando dados...</td>
+                         </tr>
+                       )}
+                    </tbody>
+                 </table>
                </div>
             </div>
           )}
         </div>
 
-        {showBookingConfirm && (
-           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/85 backdrop-blur-xl">
-              <div className="bg-white rounded-[4rem] p-16 max-w-2xl w-full animate-in zoom-in-95 luxury-shadow">
-                 <h4 className="text-4xl font-display font-bold text-slate-900 mb-10 tracking-tight">Confirmar Agendamento</h4>
-                 <div className="space-y-6 mb-12">
-                    {[
-                      { l: 'Cliente', v: showBookingConfirm.clientName },
-                      { l: 'Serviço Identificado', v: showBookingConfirm.serviceName },
-                      { l: 'Data Sugerida', v: `${showBookingConfirm.date} às ${showBookingConfirm.time}` }
-                    ].map((item, i) => (
-                      <div key={i} className="bg-slate-50/80 p-8 rounded-[2.5rem] border border-slate-100 flex items-center justify-between">
-                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.l}</p>
-                            <p className="text-2xl font-bold text-slate-800">{item.v}</p>
-                         </div>
-                         <CheckCircle2 className="text-emerald-500 w-8 h-8 opacity-20" />
-                      </div>
-                    ))}
-                 </div>
-                 <div className="flex space-x-6">
-                    <button onClick={() => setShowBookingConfirm(null)} className="flex-1 py-7 rounded-[2.5rem] font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</button>
-                    <button onClick={() => confirmBooking(showBookingConfirm)} className="flex-[2] bg-rose-500 text-white py-7 rounded-[2.5rem] font-black uppercase tracking-widest shadow-2xl hover:bg-rose-600 transition-all active:scale-95">Confirmar na Agenda</button>
-                 </div>
-              </div>
-           </div>
+        {/* Modal de confirmação mobile-friendly */}
+        {tempBooking && (
+          <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-3xl flex items-end sm:items-center justify-center p-4">
+            <div className="glass-card p-8 sm:p-12 rounded-t-[2.5rem] sm:rounded-[3rem] max-w-lg w-full text-center border-[#ff007a]/30 animate-in slide-in-from-bottom duration-500">
+               <Sparkles className="w-10 h-10 text-[#ff007a] mx-auto mb-6 glow-magenta" />
+               <h4 className="text-2xl font-display font-bold mb-6 text-white">Venda Detectada</h4>
+               <div className="space-y-3 mb-8 text-left bg-black/40 p-6 rounded-2xl border border-white/10">
+                  <p className="text-xs text-white/70 tracking-wide"><b className="text-[#ff007a] uppercase text-[8px] block mb-1">Cliente</b> {tempBooking.clientName}</p>
+                  <p className="text-xs text-white/70 tracking-wide"><b className="text-[#ff007a] uppercase text-[8px] block mb-1">Serviço</b> {tempBooking.serviceName}</p>
+                  <p className="text-xs text-white/70 tracking-wide"><b className="text-[#ff007a] uppercase text-[8px] block mb-1">Horário</b> {tempBooking.date} às {tempBooking.time}</p>
+               </div>
+               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button onClick={() => setTempBooking(null)} className="py-4 rounded-xl font-bold text-white/40 active:text-white order-2 sm:order-1">Cancelar</button>
+                  <button onClick={confirmBooking} className="flex-1 btn-magenta text-white py-4 rounded-xl font-black uppercase tracking-widest text-[9px] shadow-xl order-1 sm:order-2">Confirmar Venda</button>
+               </div>
+            </div>
+          </div>
         )}
-
-        <div className="fixed bottom-8 right-10 z-[60]">
-           <div className="glass-card px-6 py-3 rounded-full flex items-center space-x-4 border-white/50 shadow-2xl">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-black text-slate-700 uppercase tracking-[0.25em]">SaaS Cloud Engine v3.0 - <span className="text-rose-600">dn3j</span></span>
-           </div>
-        </div>
       </main>
 
-      <style>{`
-        @keyframes progress { 0% { width: 0%; } 100% { width: 100%; } }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-      `}</style>
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 h-20 mobile-nav-glass flex items-center justify-around px-4 lg:hidden z-[60] pb-env(safe-area-inset-bottom)">
+        <MobileNavItem icon={<LayoutDashboard />} label="Painel" active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')} />
+        <MobileNavItem icon={<Calendar />} label="Agenda" active={activeView === 'appointments'} onClick={() => setActiveView('appointments')} />
+        <MobileNavItem icon={<Target />} label="Vendas" active={activeView === 'whatsapp'} onClick={() => setActiveView('whatsapp')} />
+        <MobileNavItem icon={<Play />} label="Vídeo" active={(activeView as any) === 'video_presentation'} onClick={() => setActiveView('video_presentation')} />
+      </nav>
     </div>
   );
 }
