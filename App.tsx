@@ -217,8 +217,8 @@ export default function App() {
   });
 
   const [backendUrl, setBackendUrl] = useState(() => {
-    // Priority: Saved storage > Environment variable shim > Localhost
-    return localStorage.getItem('bellaflow_backend_url') || (window as any).CONFIG_BACKEND_URL || 'http://localhost:3000';
+    // Tenta detectar variável injetada globalmente ou usa localhost como fallback
+    return (window as any).CONFIG_BACKEND_URL || localStorage.getItem('bellaflow_backend_url') || 'http://localhost:3000';
   });
 
   const [activeView, setActiveView] = useState<View>(() => {
@@ -245,7 +245,7 @@ export default function App() {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const res = await fetch(`${backendUrl}/status`);
+        const res = await fetch(`${backendUrl}/status`, { mode: 'cors' });
         const data = await res.json();
         setConnStatus(data.status);
       } catch (e) {
@@ -253,7 +253,7 @@ export default function App() {
       }
     };
     checkConnection();
-    const interval = setInterval(checkConnection, 8000);
+    const interval = setInterval(checkConnection, 10000);
     return () => clearInterval(interval);
   }, [backendUrl]);
 
