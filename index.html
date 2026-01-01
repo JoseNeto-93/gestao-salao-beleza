@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
     
     <script>
-      // Polyfill essencial para variáveis de ambiente no frontend
+      // Polyfill essencial para variáveis de ambiente no frontend para evitar erros de 'process is not defined'
       window.process = { env: { API_KEY: "" } };
     </script>
 
@@ -151,6 +151,6 @@
     <div id="root"></div>
     <div class="dn3j-signature">desenvolvido por DN3J</div>
     
-    <script type="module" src="index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
