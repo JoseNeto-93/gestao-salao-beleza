@@ -5,12 +5,19 @@ export default defineConfig({
   plugins: [react()],
   define: {
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
-    'process.env': {}
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: false
+    sourcemap: false,
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'lucide-react', 'recharts'],
+        },
+      },
+    },
   },
   server: {
     port: 3000,
