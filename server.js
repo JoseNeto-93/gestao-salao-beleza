@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 // 🔎 STATUS (Monitoramento pelo Frontend)
 app.get("/status", (req, res) => {
-  res.json({ 
+  res.json({
     status: "CONNECTED",
     mode: "Cloud API",
     tenancy: "Multi-Tenant Active"
@@ -74,7 +74,7 @@ app.post("/webhook", async (req, res) => {
         })
         .select()
         .single();
-      
+
       if (createError) throw createError;
       salon = newSalon;
     }
@@ -124,5 +124,8 @@ app.listen(PORT, () => {
   console.log(`🚀 BellaFlow Multi-Tenant Cloud API Online`);
   console.log(`📡 Porta: ${PORT}`);
   console.log(`✅ Webhook: http://localhost:${PORT}/webhook`);
+  if (!process.env.SUPABASE_URL || !process.env.API_KEY) {
+    console.log(`⚠️  Rodando em MOCK MODE (Algumas funcionalidades são simuladas)`);
+  }
   console.log(`================================================\n`);
 });
