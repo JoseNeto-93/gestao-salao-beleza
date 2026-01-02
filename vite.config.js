@@ -10,5 +10,12 @@ export default defineConfig({
     hmr: {
       overlay: false
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      }
+    }
   }
 });
