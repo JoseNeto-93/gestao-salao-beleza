@@ -1,1 +1,1 @@
-// Arquivo removido em favor do index.tsx
+// Arquivo removido - O sistema utiliza o index.tsx automaticamente
