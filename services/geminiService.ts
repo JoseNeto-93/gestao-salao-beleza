@@ -1,7 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 export async function extractAppointmentFromText(text: string) {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+  // Use process.env.API_KEY directly as required by the @google/genai SDK guidelines
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -30,7 +31,8 @@ export async function extractAppointmentFromText(text: string) {
 }
 
 export async function suggestSalonBranding(userInput: string) {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+  // Use process.env.API_KEY directly as required by the @google/genai SDK guidelines
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
