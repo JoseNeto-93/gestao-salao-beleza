@@ -20,34 +20,29 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html, body {
+        html {
+            height: 100%;
+        }
+
+        body {
             min-height: 100vh;
             background-color: var(--deep-dark);
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #ffffff;
             overflow-x: hidden;
-        }
-
-        /* Fundo fixo e performático */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+            /* Fundo aplicado diretamente no body para garantir renderização imediata */
             background: 
                 linear-gradient(rgba(5, 1, 13, 0.8), rgba(5, 1, 13, 0.9)),
                 url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            background-repeat: no-repeat;
         }
 
         #root {
             position: relative;
-            z-index: 1;
+            z-index: 10;
             min-height: 100vh;
         }
 
@@ -67,11 +62,11 @@
         .btn-premium {
             background: linear-gradient(135deg, #ff007a 0%, #7000ff 100%);
             box-shadow: 0 8px 24px rgba(255, 0, 122, 0.3);
-            transition: transform 0.2s;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .btn-premium:active {
-            transform: scale(0.98);
+            transform: scale(0.96);
         }
 
         .dn3j-signature {
@@ -87,12 +82,13 @@
             pointer-events: none;
         }
 
-        /* Ocultar scrollbar mantendo funcionalidade */
+        /* Esconder scrollbars */
         ::-webkit-scrollbar {
             display: none;
         }
         body {
             scrollbar-width: none;
+            -ms-overflow-style: none;
         }
     </style>
 <script type="importmap">
@@ -118,8 +114,5 @@
 <body class="antialiased">
     <div id="root"></div>
     <div class="dn3j-signature">desenvolvido por DN3J</div>
-
-    <!-- Script de entrada principal do React -->
-    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
