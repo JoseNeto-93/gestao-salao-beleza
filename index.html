@@ -28,38 +28,46 @@
             padding: 0;
             min-height: 100vh;
             background-color: var(--deep-dark);
+            overflow-x: hidden;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #ffffff;
-            /* Sistema de fundo robusto: gradiente + imagem + fallback */
-            background: 
-                linear-gradient(rgba(5, 1, 13, 0.85), rgba(5, 1, 13, 0.95)),
-                url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop');
+        }
+
+        /* Sistema de Fundo Luxo */
+        .app-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .app-bg-image {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
+            opacity: 0.18; /* Ajustado para melhor visibilidade sem ofuscar o texto */
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1.5px solid rgba(255, 255, 255, 0.08);
+        .app-bg-gradient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 0% 0%, rgba(255, 0, 122, 0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(112, 0, 255, 0.08) 0%, transparent 50%),
+                        linear-gradient(to bottom, transparent, var(--deep-dark) 90%);
         }
 
-        .luxury-gradient-text {
-            background: linear-gradient(135deg, #ffffff 0%, #ff007a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .btn-premium {
-            background: linear-gradient(135deg, #ff007a 0%, #7000ff 100%);
-            box-shadow: 0 8px 24px rgba(255, 0, 122, 0.3);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        #root {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
         }
 
         .dn3j-signature {
@@ -73,11 +81,6 @@
             color: rgba(255, 255, 255, 0.2);
             z-index: 1000;
             pointer-events: none;
-        }
-
-        #root {
-            position: relative;
-            z-index: 10;
         }
     </style>
 <script type="importmap">
@@ -101,7 +104,16 @@
 </script>
 </head>
 <body class="antialiased">
+    <div class="app-bg-container">
+        <div class="app-bg-image"></div>
+        <div class="app-bg-gradient"></div>
+    </div>
+    
     <div id="root"></div>
+    
     <div class="dn3j-signature">desenvolvido por DN3J</div>
+
+    <!-- Script de entrada do React -->
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
