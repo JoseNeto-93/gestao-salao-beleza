@@ -28,10 +28,10 @@
             overflow-x: hidden;
         }
 
-        /* Fundo aplicado diretamente no body para garantir renderização imediata */
+        /* Fundo luxuoso persistente */
         body {
-            background: 
-                linear-gradient(rgba(5, 1, 13, 0.8), rgba(5, 1, 13, 0.9)),
+            background-image: 
+                linear-gradient(rgba(5, 1, 13, 0.85), rgba(5, 1, 13, 0.95)),
                 url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
@@ -61,7 +61,6 @@
         .btn-premium {
             background: linear-gradient(135deg, #ff007a 0%, #7000ff 100%);
             box-shadow: 0 8px 24px rgba(255, 0, 122, 0.3);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .dn3j-signature {
@@ -77,13 +76,11 @@
             pointer-events: none;
         }
 
-        /* Ocultar scrollbars mantendo funcionalidade */
         ::-webkit-scrollbar {
             display: none;
         }
         body {
             scrollbar-width: none;
-            -ms-overflow-style: none;
         }
     </style>
 <script type="importmap">
@@ -109,6 +106,6 @@
 <body class="antialiased">
     <div id="root"></div>
     <div class="dn3j-signature">desenvolvido por DN3J</div>
-    <!-- Removidos scripts manuais e importmaps para evitar erro de MIME type e permitir injeção automática do sistema -->
+    <script type="module" src="/main.tsx"></script>
 </body>
 </html>
