@@ -1,0 +1,8 @@
+{
+  "name": "BellaFlow Salon Manager",
+  "description": "A premium beauty salon management SaaS featuring AI-powered WhatsApp booking extraction, revenue tracking, and service analytics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

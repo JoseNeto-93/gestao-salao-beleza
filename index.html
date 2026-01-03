@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#05010d">
+    <title>BellaFlow - Luxury Salon Management</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-magenta: #ff007a;
+            --accent-purple: #7000ff;
+            --deep-dark: #05010d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            min-height: 100vh;
+            background-color: var(--deep-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Fundo luxuoso persistente */
+        body {
+            background-image:
+                linear-gradient(rgba(5, 1, 13, 0.85), rgba(5, 1, 13, 0.95)),
+                url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        #root {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .luxury-gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #ff007a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #ff007a 0%, #7000ff 100%);
+            box-shadow: 0 8px 24px rgba(255, 0, 122, 0.3);
+        }
+
+        .dn3j-signature {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            scrollbar-width: none;
+        }
+    </style>
+
+</head>
+
+<body class="antialiased">
+    <div id="root"></div>
+    <div class="dn3j-signature">desenvolvido por DN3J</div>
+    <script type="module" src="/main.tsx"></script>
+</body>
+
+</html>
