@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# BellaFlow - Gestão de Salões de Beleza (Multi-Tenant)
 
-# Run and deploy your AI Studio app
+Sistema moderno de gestão para salões de beleza, com integração WhatsApp + IA (Gemini).
 
-This contains everything you need to run your app locally.
+## 🚀 Como Iniciar o Sistema (Windows)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1BEEs3J2_oa2p3aOMZmHYJDnLcj3RxUwQ
+**Maneira Mais Fácil:**
+1. Dê um **clique duplo** no arquivo `iniciar_sistema.bat`.
+   - Isso abrirá o servidor e o site automaticamente para você.
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+**Maneira Manual (Terminal):**
+Se preferir usar o terminal, você precisa de **dois** terminais abertos:
 
+**Terminal 1 (Backend/API):**
+```bash
+node server.js
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Terminal 2 (Frontend/Site):**
+```bash
+npm run dev
+```
+(Depois clique no link que aparecer, ex: `http://localhost:5173`)
+
+---
+
+## ⚠️ AVISO IMPORTANTE
+**NÃO** use "Live Server" ou abra o `index.html` direto. O sistema não vai funcionar e dará erro de "MIME type".
+Use sempre o `iniciar_sistema.bat` ou `npm run dev`.
+
+## Detalhes do Projeto
+- **Frontend**: React + Vite + TailwindCSS
+- **Backend**: Node.js + Express
+- **Banco de Dados**: Supabase (Mock Mode ativado se sem chaves)
+- **IA**: Google Gemini
