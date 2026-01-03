@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       }
     },
+<<<<<<< HEAD
 
+=======
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'lucide-react', 'recharts', '@google/genai']
+    }
+>>>>>>> db1bc07f917dd7fccf1952c84c95a6d6fd32bac8
   };
 });

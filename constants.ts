@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> db1bc07f917dd7fccf1952c84c95a6d6fd32bac8
 import { Service } from './types';
 
 export const INITIAL_SERVICES: Service[] = [
